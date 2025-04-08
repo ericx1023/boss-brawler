@@ -6,7 +6,7 @@ version: 0.7.0
 repository: https://github.com/flutter/ai
 
 topics:
-  - ai
+  - artificial-intelligence
   - chat
   - gemini
 
@@ -17,6 +17,7 @@ environment:
 dependencies:
   cross_file: ^0.3.4+2
   file_selector: ^1.0.3
+  firebase_core: ^3.13.0
   firebase_vertexai: ^1.0.1
   flutter:
     sdk: flutter

@@ -37,3 +37,6 @@ example/lib/echo.dart
 .flutter-plugins
 .flutter-plugins-dependencies
 .vscode/settings.json
+
+example/lib/gemini_api_key.dart
+example/lib/firebase_options.dart

@@ -1,109 +1,92 @@
 # Task ID: 2
-# Title: Integrate Langchain with Gemini API
+# Title: Integrate Vertex AI Gemini API
 # Status: pending
 # Dependencies: 1
 # Priority: high
-# Description: Implement core Langchain integration with Google Gemini API for basic request/response functionality.
+# Description: Set up Vertex AI Gemini API integration within Cloud Functions for chat functionality
 # Details:
-Install Langchain and Google Gemini SDK. Create a service class for Gemini integration. Implement methods to initialize Gemini client with API key. Setup basic prompt templates for the AI Coach role. Create utility functions for sending prompts and processing responses. Implement simple error handling for API failures.
+1. Set up Google Cloud project authentication
+2. Install Vertex AI SDK in Cloud Functions environment
+3. Create API client initialization function
+4. Implement prompt template management for the AI coach role
+5. Create functions to handle requests to Vertex AI and process responses
+6. Implement error handling with appropriate retries and fallbacks
+7. Create a test endpoint to verify AI integration
 
 # Test Strategy:
-Test connection to Gemini API with sample prompts. Verify responses are correctly formatted. Test error handling with invalid inputs and API failures.
+Create unit tests for prompt generation. Test the API integration with sample conversation inputs and verify appropriate responses. Validate error handling by simulating API failures.
 
 # Subtasks:
-## 1. Install and Setup Langchain and Google Gemini SDK [pending]
+## 1. Set up authentication and environment configuration for Vertex AI [pending]
 ### Dependencies: None
-### Description: Install the required packages and set up the project structure for Langchain and Google Gemini integration.
+### Description: Configure Google Cloud authentication, install necessary dependencies, and set up the environment for Vertex AI integration in Cloud Functions.
 ### Details:
-Implementation details:
-1. Create a virtual environment for the project
-2. Install langchain package using pip: `pip install langchain`
-3. Install Google Gemini SDK: `pip install google-generativeai`
-4. Install any additional dependencies like dotenv for environment variables: `pip install python-dotenv`
-5. Create a basic project structure with folders for services, utils, and config
-6. Create a .env file to store the Gemini API key securely
-7. Add the .env file to .gitignore to prevent committing secrets
+Implementation steps:
+1. Create a service account with appropriate Vertex AI permissions in Google Cloud Console
+2. Generate and download service account key JSON file
+3. Configure Cloud Functions to use the service account credentials
+4. Update requirements.txt to include vertex-ai SDK and other dependencies (google-cloud-aiplatform>=1.36.0)
+5. Create environment variables for project ID, location, and other configuration parameters
+6. Set up a configuration module to centralize access to these settings
 
 Testing approach:
-- Verify all packages install correctly without errors
-- Confirm imports work in a test script
-- Ensure environment variables can be loaded correctly
+- Create a simple test function that attempts to authenticate with Vertex AI
+- Verify credentials are properly loaded
+- Ensure all required environment variables are accessible
 
-## 2. Create Gemini Client Configuration Service [pending]
+## 2. Implement core Vertex AI client initialization and API interaction [pending]
 ### Dependencies: 2.1
-### Description: Implement a service class to initialize and configure the Gemini API client with proper authentication.
+### Description: Create functions to initialize the Vertex AI client and handle basic interactions with the Gemini API.
 ### Details:
-Implementation details:
-1. Create a `GeminiService` class in the services directory
-2. Implement a method to load the API key from environment variables
-3. Create an initialization method that configures the Gemini client with the API key
-4. Add configuration options for model selection (e.g., gemini-pro)
-5. Implement client validation to ensure the API key is valid
-6. Create a singleton pattern to reuse the client throughout the application
-7. Add logging for connection events
+Implementation steps:
+1. Create a module for Vertex AI client utilities
+2. Implement a function to initialize the Vertex AI client using authentication from subtask 1
+3. Create a base function to send requests to Gemini model API
+4. Implement parameter handling for model requests (temperature, max_tokens, etc.)
+5. Create a function to process and standardize API responses
+6. Implement basic request/response logging
 
 Testing approach:
-- Create unit tests to verify client initialization with mock API keys
-- Test error handling when API key is missing or invalid
-- Verify the singleton pattern works correctly across multiple imports
+- Create unit tests for client initialization
+- Test sending a simple prompt to the Gemini model
+- Verify response structure matches expected format
+- Test with different parameter configurations
 
-## 3. Implement Prompt Templates for AI Coach Role [pending]
-### Dependencies: 2.1, 2.2
-### Description: Create structured prompt templates using Langchain for the AI Coach functionality.
+## 3. Develop prompt template management system [pending]
+### Dependencies: 2.2
+### Description: Create a system to manage prompt templates for the AI coach role, including storage, retrieval, and formatting of prompts.
 ### Details:
-Implementation details:
-1. Create a `PromptTemplates` class or module
-2. Define base template for the AI Coach role with system instructions
-3. Implement specialized templates for different coaching scenarios (e.g., goal setting, feedback)
-4. Use Langchain's PromptTemplate class to create structured templates with variables
-5. Create a method to format templates with user inputs
-6. Implement template validation to ensure all required variables are provided
-7. Add documentation for each template explaining its purpose and required inputs
+Implementation steps:
+1. Define a structure for storing prompt templates (JSON, YAML, or database)
+2. Create functions to load and validate prompt templates
+3. Implement template variable substitution functionality
+4. Create a prompt builder that constructs complete prompts with context, history, and user input
+5. Implement functions to handle different coaching scenarios with appropriate templates
+6. Add versioning support for prompt templates
 
 Testing approach:
-- Test template formatting with various inputs
-- Verify error handling for missing template variables
-- Create test cases for each specialized template
-- Ensure templates generate appropriate prompts for the AI Coach role
+- Test template loading and validation
+- Verify variable substitution works correctly
+- Test prompt building with various inputs
+- Ensure proper handling of missing template variables
 
-## 4. Create Utility Functions for Sending Prompts and Processing Responses [pending]
+## 4. Implement error handling, testing endpoints, and integration verification [pending]
 ### Dependencies: 2.2, 2.3
-### Description: Develop utility functions to handle sending prompts to the Gemini API and processing the responses.
+### Description: Create robust error handling for the Vertex AI integration, implement retry mechanisms, and develop test endpoints to verify the full integration.
 ### Details:
-Implementation details:
-1. Create a `GeminiProcessor` class that handles communication with the API
-2. Implement a method to send formatted prompts to the Gemini API
-3. Create functions to parse and structure the API responses
-4. Add response validation to ensure expected format
-5. Implement response caching for efficiency
-6. Create utility functions to extract specific information from responses
-7. Add methods to handle streaming responses if needed
-8. Implement response formatting for different output types (text, JSON, etc.)
+Implementation steps:
+1. Implement error detection and classification for Vertex AI API errors
+2. Create retry mechanism with exponential backoff for transient failures
+3. Implement fallback strategies for different error scenarios
+4. Develop comprehensive error logging
+5. Create a test HTTP endpoint in Cloud Functions to verify the complete integration
+6. Implement a simple chat interface for manual testing
+7. Create integration tests that verify the end-to-end functionality
 
 Testing approach:
-- Create unit tests with mock API responses
-- Test response parsing with various response formats
-- Verify caching mechanisms work correctly
-- Test extraction functions with sample responses
-
-## 5. Implement Error Handling and Reliability Features [pending]
-### Dependencies: 2.2, 2.4
-### Description: Add comprehensive error handling, retries, and reliability features for the Gemini API integration.
-### Details:
-Implementation details:
-1. Create an error handling module for API-specific errors
-2. Implement retry logic for transient failures (network issues, rate limits)
-3. Add exponential backoff for retries
-4. Create custom exception classes for different error types
-5. Implement graceful fallbacks for when the API is unavailable
-6. Add detailed logging for all API interactions and errors
-7. Create a monitoring system to track API usage and errors
-8. Implement timeout handling for long-running requests
-
-Testing approach:
-- Test retry logic by simulating network failures
-- Verify exponential backoff works correctly
-- Test custom exceptions are raised appropriately
-- Create integration tests for the complete request/response cycle
-- Test timeout handling with delayed responses
+- Test error handling by simulating various error conditions
+- Verify retry mechanism works as expected
+- Test fallback strategies
+- Use the test endpoint to verify complete integration
+- Conduct end-to-end testing with sample conversations
 

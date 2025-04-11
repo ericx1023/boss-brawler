@@ -1,0 +1,85 @@
+# Product Requirements Document: Boss Brawler - Negotiation Practice App
+
+## 1. Introduction
+
+Boss Brawler is a mobile application designed to help users practice and improve their negotiation skills through interactive chat sessions with an AI-powered coach. Users can provide context for a negotiation scenario, engage in a simulated negotiation, and receive feedback on their performance.
+
+## 2. Goals
+
+*   Provide a platform for users to practice negotiation skills in a safe environment.
+*   Offer AI-driven coaching and feedback on user negotiation tactics.
+*   Track user progress and provide insights into areas for improvement.
+*   Deliver a user-friendly chat interface for seamless interaction.
+
+## 3. High-Level Features (Based on Initial Tasks)
+
+### 3.1 Backend System (Firebase Cloud Functions + Vertex AI)
+
+*   **Basic Backend Setup:** Firebase project initialized, Cloud Functions setup (Node.js/Python) with basic HTTP trigger, health check endpoint, and CORS configuration. (Ref: Task 1)
+*   **AI Integration:** Integrate Vertex AI Gemini API directly within Cloud Functions for core chat and analysis. Includes setting up API clients, request/response handling, prompt management, and error handling. (Ref: Task 2)
+*   **Conversation Memory:** Implement conversation history storage and retrieval using Firestore within Cloud Functions. (Ref: Task 3)
+*   **AI Analysis Feature:** Develop a dedicated Cloud Function or utilize the main chat function logic to analyze user responses via Vertex AI based on predefined metrics (e.g., clarity, assertiveness) and provide structured feedback. (Ref: Task 4)
+*   **Chat API Endpoint:** Create a primary HTTPS Cloud Function endpoint (`/chat_message` or similar) to handle user messages, manage session state (using Firestore), interact with Vertex AI (for responses and analysis), and return results to the frontend. (Ref: Task 5)
+
+### 3.2 Frontend System (Flutter)
+
+*   **Flutter Project Setup:** Initialize the Flutter application with appropriate project structure (screens, widgets, services), basic theme, navigation, and necessary dependencies. (Ref: Task 6)
+*   **UI Components:** Develop core UI elements for the chat interface:
+    *   Context input field.
+    *   Chat view displaying messages (user, AI, analysis feedback).
+    *   Message input area with send button.
+    *   Responsive design and loading indicators. (Ref: Task 7)
+*   **API Client:** Implement a service in Flutter to communicate with the backend API, handle requests/responses, manage errors, and perform data serialization/deserialization. (Ref: Task 8)
+*   **State Management:** Implement a state management solution (e.g., Provider, Bloc) to manage the chat session state, handle UI updates, loading states, and API interactions within the Flutter app. (Ref: Task 9)
+
+### 3.3 Core User Flow
+
+*   **End-to-End Integration:** Connect all frontend and backend components to enable the complete user flow: entering context, chatting with the AI coach, receiving responses and analysis feedback. (Ref: Task 10)
+
+## 4. Detailed Functional Requirements
+
+*(Details derived from `details` and `subtasks` within `tasks.json`)*
+
+### 4.1 AI Interaction & Analysis
+
+*   The AI coach should respond contextually based on the ongoing conversation history.
+*   The system must implement specific prompt templates for the AI coach role and for the analysis function.
+*   The analysis should focus on metrics like clarity and assertiveness, providing actionable feedback.
+*   Analysis feedback should be visually distinguishable from regular chat messages.
+*   Error handling must be robust for AI API interactions, including retries and fallbacks.
+
+### 4.2 Conversation Management
+
+*   The system must maintain conversation history for each session.
+*   A mechanism should exist to create new sessions (potentially with initial context) and retrieve existing ones.
+
+### 4.3 User Interface
+
+*   The chat interface should clearly differentiate between user messages, AI coach responses, and AI analysis feedback.
+*   The app must handle loading states during API calls.
+*   Basic navigation (e.g., potentially a side menu as mentioned in `init_prompt.txt`, although not explicitly broken down in `tasks.json`) should be considered.
+
+## 5. Technical Requirements
+
+*   **Backend:** Firebase Cloud Functions (Node.js/Python), Firebase Firestore, Google Vertex AI SDK
+*   **Frontend:** Flutter
+*   **AI:** Google Vertex AI (Gemini)
+*   **Database/Storage:** Firebase Firestore for session history and potentially user data.
+
+## 6. Testing Strategy
+
+*   **Backend:** Unit tests for services, API endpoint testing (health check, chat endpoint functionality, error handling), integration tests for AI interaction.
+*   **Frontend:** Widget tests for UI components, unit tests for API client and state management, integration tests for API communication.
+*   **End-to-End:** Testing the complete user flow from app start, context input, conversation, receiving feedback, and session handling. Test across different devices/screen sizes.
+
+## 7. Open Questions / Future Considerations
+
+*   Need for persistent storage beyond in-memory for chat history (Firestore recommended).
+*   Implementation details for Progress Report and Settings features.
+*   Voice input implementation.
+*   Specific UI design for the side panel navigation.
+*   Scalability of the backend solution. *(Backend sections updated to reflect the decision to use Firebase Cloud Functions + Vertex AI)*
+
+---
+*Reflects backend architecture using Firebase Cloud Functions and Vertex AI.*
+*Generated based on ai/tasks/tasks.json as of [Current Date/Time]* 

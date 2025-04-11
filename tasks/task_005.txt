@@ -1,73 +1,96 @@
 # Task ID: 5
-# Title: Build /chat_message API Endpoint
+# Title: Create Primary Chat API Endpoint
 # Status: pending
 # Dependencies: 2, 3, 4
 # Priority: high
-# Description: Implement the primary API endpoint that handles user messages and returns AI responses with analysis.
+# Description: Develop the main chat endpoint that handles message processing, AI interaction, and returns responses to frontend
 # Details:
-Create POST endpoint at /chat_message that accepts context (for new sessions) and user message. Implement request validation for required fields. Connect endpoint to session manager to maintain conversation history. Integrate response chain and analysis chain, executing them sequentially. Format response to include both AI reply and analysis. Add appropriate error handling and logging.
+1. Create `/chat_message` HTTPS Cloud Function endpoint
+2. Implement request validation and parameter extraction
+3. Integrate session management to maintain conversation context
+4. Connect to Vertex AI for generating responses
+5. Include logic to trigger and incorporate analysis feedback when appropriate
+6. Structure response format for frontend consumption
+7. Implement comprehensive error handling and logging
+8. Add rate limiting and security measures
 
 # Test Strategy:
-Test endpoint with valid requests and verify correct responses. Test session creation with new context. Test conversation continuation with existing sessions. Verify error responses for invalid inputs. Test performance with longer conversations.
+Test the endpoint with various request scenarios including new sessions and existing sessions. Verify response format matches frontend requirements. Test error handling with malformed requests and API failures.
 
 # Subtasks:
-## 1. Create basic /chat_message POST endpoint structure [pending]
+## 1. Create HTTPS Cloud Function Endpoint with Request Validation [pending]
 ### Dependencies: None
-### Description: Set up the foundational structure for the /chat_message endpoint, including route definition, basic request handling, and skeleton response.
+### Description: Set up the basic `/chat_message` HTTPS Cloud Function endpoint with request validation and parameter extraction logic
 ### Details:
-1. Create a new route handler for POST /chat_message
-2. Define the request body interface with 'context' and 'message' fields
-3. Set up a basic response structure that will eventually include AI reply and analysis
-4. Implement basic endpoint logging (request received, response sent)
-5. Add initial error handling structure with try/catch blocks
-6. Test the endpoint with Postman or curl to ensure it accepts requests and returns a placeholder response
+Implementation details:
+1. Create a new Cloud Function with HTTPS trigger at `/chat_message` endpoint
+2. Implement request schema validation to verify required parameters (userId, message, sessionId)
+3. Extract and sanitize request parameters
+4. Set up basic logging structure to track request processing
+5. Create the response structure template that will be populated later
+6. Implement initial error handling for malformed requests
 
-## 2. Implement request validation for /chat_message endpoint [pending]
+Testing approach:
+- Create unit tests for request validation with valid and invalid payloads
+- Test parameter extraction with various input formats
+- Verify error responses for invalid requests have appropriate status codes and messages
+
+## 2. Implement Session Management and Context Handling [pending]
 ### Dependencies: 5.1
-### Description: Add comprehensive validation for incoming requests to ensure all required fields are present and properly formatted.
+### Description: Add session management functionality to maintain conversation context across multiple interactions
 ### Details:
-1. Create validation schema for the request body (using a library like Joi, Zod, or similar)
-2. Validate that 'message' field is present and is a non-empty string
-3. Validate 'context' field structure when provided for new sessions
-4. Implement proper HTTP 400 error responses for validation failures with descriptive error messages
-5. Add validation for session ID if continuing an existing conversation
-6. Test the validation with various invalid request formats to ensure proper error handling
+Implementation details:
+1. Integrate with Firestore or similar database to store and retrieve session data
+2. Create functions to initialize new sessions when needed
+3. Implement logic to retrieve existing conversation history based on sessionId
+4. Design context window management to maintain appropriate conversation length
+5. Add functionality to update session data after each interaction
+6. Structure conversation history in a format suitable for AI model consumption
 
-## 3. Integrate session management with the /chat_message endpoint [pending]
+Testing approach:
+- Test session creation, retrieval, and updating with mock database
+- Verify context windowing correctly limits conversation history
+- Test session continuity across multiple requests with the same sessionId
+- Validate error handling for session retrieval failures
+
+## 3. Integrate Vertex AI and Implement Response Generation [pending]
 ### Dependencies: 5.1, 5.2
-### Description: Connect the endpoint to the session manager to maintain conversation history across requests.
+### Description: Connect to Vertex AI for generating responses and incorporate analysis feedback when appropriate
 ### Details:
-1. Import and initialize the session manager in the endpoint handler
-2. Create logic to either create a new session (if no session ID provided) or retrieve an existing session
-3. Add the user message to the conversation history in the session
-4. Implement session timeout/expiration handling
-5. Ensure session state is properly saved after processing
-6. Add session-related error handling (e.g., session not found, session expired)
-7. Test session creation, retrieval, and conversation history maintenance across multiple requests
+Implementation details:
+1. Set up Vertex AI client integration with appropriate authentication
+2. Format conversation context from session data for the AI model
+3. Implement the main response generation logic using Vertex AI
+4. Create mechanism to determine when analysis feedback should be triggered
+5. Design logic to incorporate analysis results into the prompt or response
+6. Format AI responses for frontend consumption with necessary metadata
+7. Implement retry logic for AI service failures
 
-## 4. Implement chain execution in the /chat_message endpoint [pending]
-### Dependencies: 5.3
-### Description: Integrate and sequentially execute the response chain and analysis chain to process user messages.
-### Details:
-1. Import response chain and analysis chain modules
-2. Set up the response chain execution with the user message and conversation history from the session
-3. Capture the AI response from the response chain
-4. Pass the AI response to the analysis chain
-5. Capture the analysis results
-6. Implement error handling for chain execution failures
-7. Add appropriate logging for chain execution steps
-8. Test the chains execute correctly and produce expected outputs
+Testing approach:
+- Create mock Vertex AI responses to test integration
+- Test conversation formatting with various session histories
+- Verify analysis feedback integration works as expected
+- Test error handling for AI service failures
+- Validate response formatting meets frontend requirements
 
-## 5. Format response and implement comprehensive error handling [pending]
-### Dependencies: 5.4
-### Description: Structure the API response to include both AI reply and analysis, and add robust error handling throughout the endpoint.
+## 4. Implement Security, Error Handling, and Performance Optimization [pending]
+### Dependencies: 5.1, 5.2, 5.3
+### Description: Add security measures, comprehensive error handling, and performance optimizations to the chat endpoint
 ### Details:
-1. Create a standardized response format that includes AI response text, analysis results, and session information
-2. Implement HTTP status code selection based on different error conditions
-3. Add detailed error logging with appropriate severity levels
-4. Implement graceful degradation (e.g., return partial results if only one chain fails)
-5. Add performance metrics logging (response time, chain execution time)
-6. Sanitize any sensitive information from error messages and logs
-7. Test the endpoint with various edge cases and error conditions
-8. Document the API response format for frontend developers
+Implementation details:
+1. Implement rate limiting to prevent abuse (e.g., using Firebase or a custom solution)
+2. Add authentication verification to ensure only authorized users can access the endpoint
+3. Enhance error handling with detailed error codes and user-friendly messages
+4. Implement comprehensive logging for debugging and monitoring
+5. Add performance monitoring metrics (latency, success rate, etc.)
+6. Optimize response time by implementing caching where appropriate
+7. Set up appropriate CORS configuration for frontend access
+8. Implement request timeout handling
+
+Testing approach:
+- Test rate limiting with rapid successive requests
+- Verify authentication requirements prevent unauthorized access
+- Test error handling for various failure scenarios (AI unavailable, database errors, etc.)
+- Measure and validate performance under load
+- Test CORS configuration with frontend requests
 

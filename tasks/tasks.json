@@ -2,79 +2,66 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Setup Backend Project Structure",
-      "description": "Initialize the Python backend project with FastAPI/Flask, configure project structure, and setup basic API routing.",
+      "title": "Setup Firebase Project and Cloud Functions",
+      "description": "Initialize Firebase project and set up Cloud Functions with basic HTTP trigger and health check endpoint",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "Create a new Python project with virtual environment. Install FastAPI/Flask and required dependencies. Setup project structure with routes, controllers, and services folders. Implement health check endpoint and basic error handling middleware. Configure CORS to allow requests from Flutter app.",
-      "testStrategy": "Verify server starts correctly. Test health check endpoint returns 200 OK. Ensure CORS headers are properly set for cross-origin requests."
+      "details": "1. Create a new Firebase project in the Firebase console\n2. Enable Cloud Functions and Firestore services\n3. Initialize a local project with Firebase CLI\n4. Configure Cloud Functions environment (Node.js)\n5. Implement a basic health check endpoint\n6. Configure CORS for API access\n7. Deploy and test the health check endpoint",
+      "testStrategy": "Verify health check endpoint returns 200 OK response. Test CORS configuration with requests from different origins."
     },
     {
       "id": 2,
-      "title": "Integrate Langchain with Gemini API",
-      "description": "Implement core Langchain integration with Google Gemini API for basic request/response functionality.",
+      "title": "Integrate Vertex AI Gemini API",
+      "description": "Set up Vertex AI Gemini API integration within Cloud Functions for chat functionality",
       "status": "pending",
       "dependencies": [
         1
       ],
       "priority": "high",
-      "details": "Install Langchain and Google Gemini SDK. Create a service class for Gemini integration. Implement methods to initialize Gemini client with API key. Setup basic prompt templates for the AI Coach role. Create utility functions for sending prompts and processing responses. Implement simple error handling for API failures.",
-      "testStrategy": "Test connection to Gemini API with sample prompts. Verify responses are correctly formatted. Test error handling with invalid inputs and API failures.",
+      "details": "1. Set up Google Cloud project authentication\n2. Install Vertex AI SDK in Cloud Functions environment\n3. Create API client initialization function\n4. Implement prompt template management for the AI coach role\n5. Create functions to handle requests to Vertex AI and process responses\n6. Implement error handling with appropriate retries and fallbacks\n7. Create a test endpoint to verify AI integration",
+      "testStrategy": "Create unit tests for prompt generation. Test the API integration with sample conversation inputs and verify appropriate responses. Validate error handling by simulating API failures.",
       "subtasks": [
         {
           "id": 1,
-          "title": "Install and Setup Langchain and Google Gemini SDK",
-          "description": "Install the required packages and set up the project structure for Langchain and Google Gemini integration.",
+          "title": "Set up authentication and environment configuration for Vertex AI",
+          "description": "Configure Google Cloud authentication, install necessary dependencies, and set up the environment for Vertex AI integration in Cloud Functions.",
           "dependencies": [],
-          "details": "Implementation details:\n1. Create a virtual environment for the project\n2. Install langchain package using pip: `pip install langchain`\n3. Install Google Gemini SDK: `pip install google-generativeai`\n4. Install any additional dependencies like dotenv for environment variables: `pip install python-dotenv`\n5. Create a basic project structure with folders for services, utils, and config\n6. Create a .env file to store the Gemini API key securely\n7. Add the .env file to .gitignore to prevent committing secrets\n\nTesting approach:\n- Verify all packages install correctly without errors\n- Confirm imports work in a test script\n- Ensure environment variables can be loaded correctly",
+          "details": "Implementation steps:\n1. Create a service account with appropriate Vertex AI permissions in Google Cloud Console\n2. Generate and download service account key JSON file\n3. Configure Cloud Functions to use the service account credentials\n4. Update requirements.txt to include vertex-ai SDK and other dependencies (google-cloud-aiplatform>=1.36.0)\n5. Create environment variables for project ID, location, and other configuration parameters\n6. Set up a configuration module to centralize access to these settings\n\nTesting approach:\n- Create a simple test function that attempts to authenticate with Vertex AI\n- Verify credentials are properly loaded\n- Ensure all required environment variables are accessible",
           "status": "pending",
           "parentTaskId": 2
         },
         {
           "id": 2,
-          "title": "Create Gemini Client Configuration Service",
-          "description": "Implement a service class to initialize and configure the Gemini API client with proper authentication.",
+          "title": "Implement core Vertex AI client initialization and API interaction",
+          "description": "Create functions to initialize the Vertex AI client and handle basic interactions with the Gemini API.",
           "dependencies": [
             1
           ],
-          "details": "Implementation details:\n1. Create a `GeminiService` class in the services directory\n2. Implement a method to load the API key from environment variables\n3. Create an initialization method that configures the Gemini client with the API key\n4. Add configuration options for model selection (e.g., gemini-pro)\n5. Implement client validation to ensure the API key is valid\n6. Create a singleton pattern to reuse the client throughout the application\n7. Add logging for connection events\n\nTesting approach:\n- Create unit tests to verify client initialization with mock API keys\n- Test error handling when API key is missing or invalid\n- Verify the singleton pattern works correctly across multiple imports",
+          "details": "Implementation steps:\n1. Create a module for Vertex AI client utilities\n2. Implement a function to initialize the Vertex AI client using authentication from subtask 1\n3. Create a base function to send requests to Gemini model API\n4. Implement parameter handling for model requests (temperature, max_tokens, etc.)\n5. Create a function to process and standardize API responses\n6. Implement basic request/response logging\n\nTesting approach:\n- Create unit tests for client initialization\n- Test sending a simple prompt to the Gemini model\n- Verify response structure matches expected format\n- Test with different parameter configurations",
           "status": "pending",
           "parentTaskId": 2
         },
         {
           "id": 3,
-          "title": "Implement Prompt Templates for AI Coach Role",
-          "description": "Create structured prompt templates using Langchain for the AI Coach functionality.",
+          "title": "Develop prompt template management system",
+          "description": "Create a system to manage prompt templates for the AI coach role, including storage, retrieval, and formatting of prompts.",
           "dependencies": [
-            1,
             2
           ],
-          "details": "Implementation details:\n1. Create a `PromptTemplates` class or module\n2. Define base template for the AI Coach role with system instructions\n3. Implement specialized templates for different coaching scenarios (e.g., goal setting, feedback)\n4. Use Langchain's PromptTemplate class to create structured templates with variables\n5. Create a method to format templates with user inputs\n6. Implement template validation to ensure all required variables are provided\n7. Add documentation for each template explaining its purpose and required inputs\n\nTesting approach:\n- Test template formatting with various inputs\n- Verify error handling for missing template variables\n- Create test cases for each specialized template\n- Ensure templates generate appropriate prompts for the AI Coach role",
+          "details": "Implementation steps:\n1. Define a structure for storing prompt templates (JSON, YAML, or database)\n2. Create functions to load and validate prompt templates\n3. Implement template variable substitution functionality\n4. Create a prompt builder that constructs complete prompts with context, history, and user input\n5. Implement functions to handle different coaching scenarios with appropriate templates\n6. Add versioning support for prompt templates\n\nTesting approach:\n- Test template loading and validation\n- Verify variable substitution works correctly\n- Test prompt building with various inputs\n- Ensure proper handling of missing template variables",
           "status": "pending",
           "parentTaskId": 2
         },
         {
           "id": 4,
-          "title": "Create Utility Functions for Sending Prompts and Processing Responses",
-          "description": "Develop utility functions to handle sending prompts to the Gemini API and processing the responses.",
+          "title": "Implement error handling, testing endpoints, and integration verification",
+          "description": "Create robust error handling for the Vertex AI integration, implement retry mechanisms, and develop test endpoints to verify the full integration.",
           "dependencies": [
             2,
             3
           ],
-          "details": "Implementation details:\n1. Create a `GeminiProcessor` class that handles communication with the API\n2. Implement a method to send formatted prompts to the Gemini API\n3. Create functions to parse and structure the API responses\n4. Add response validation to ensure expected format\n5. Implement response caching for efficiency\n6. Create utility functions to extract specific information from responses\n7. Add methods to handle streaming responses if needed\n8. Implement response formatting for different output types (text, JSON, etc.)\n\nTesting approach:\n- Create unit tests with mock API responses\n- Test response parsing with various response formats\n- Verify caching mechanisms work correctly\n- Test extraction functions with sample responses",
-          "status": "pending",
-          "parentTaskId": 2
-        },
-        {
-          "id": 5,
-          "title": "Implement Error Handling and Reliability Features",
-          "description": "Add comprehensive error handling, retries, and reliability features for the Gemini API integration.",
-          "dependencies": [
-            2,
-            4
-          ],
-          "details": "Implementation details:\n1. Create an error handling module for API-specific errors\n2. Implement retry logic for transient failures (network issues, rate limits)\n3. Add exponential backoff for retries\n4. Create custom exception classes for different error types\n5. Implement graceful fallbacks for when the API is unavailable\n6. Add detailed logging for all API interactions and errors\n7. Create a monitoring system to track API usage and errors\n8. Implement timeout handling for long-running requests\n\nTesting approach:\n- Test retry logic by simulating network failures\n- Verify exponential backoff works correctly\n- Test custom exceptions are raised appropriately\n- Create integration tests for the complete request/response cycle\n- Test timeout handling with delayed responses",
+          "details": "Implementation steps:\n1. Implement error detection and classification for Vertex AI API errors\n2. Create retry mechanism with exponential backoff for transient failures\n3. Implement fallback strategies for different error scenarios\n4. Develop comprehensive error logging\n5. Create a test HTTP endpoint in Cloud Functions to verify the complete integration\n6. Implement a simple chat interface for manual testing\n7. Create integration tests that verify the end-to-end functionality\n\nTesting approach:\n- Test error handling by simulating various error conditions\n- Verify retry mechanism works as expected\n- Test fallback strategies\n- Use the test endpoint to verify complete integration\n- Conduct end-to-end testing with sample conversations",
           "status": "pending",
           "parentTaskId": 2
         }
@@ -82,123 +69,70 @@
     },
     {
       "id": 3,
-      "title": "Implement In-Memory Conversation Storage",
-      "description": "Create a simple in-memory storage mechanism to maintain conversation history during a chat session.",
+      "title": "Implement Conversation History Storage",
+      "description": "Create Firestore database structure and functions to store and retrieve conversation history",
       "status": "pending",
       "dependencies": [
         1
       ],
       "priority": "high",
-      "details": "Implement ChatMessage and ChatSession data models as defined in the PRD. Create a SessionManager service to handle creation and retrieval of chat sessions. Use Langchain's Memory modules for maintaining conversation context. Implement methods to add new messages to a session and retrieve full conversation history.",
-      "testStrategy": "Test creating new sessions with context. Verify messages can be added to sessions. Test retrieving conversation history. Ensure session state is maintained correctly between requests."
+      "details": "1. Design Firestore data model for conversation sessions\n2. Create functions to initialize new conversation sessions\n3. Implement methods to add messages to existing sessions\n4. Develop functions to retrieve complete conversation history\n5. Add timestamp and message type metadata to each message\n6. Implement session management (create, retrieve, list sessions)\n7. Add data validation and security rules",
+      "testStrategy": "Test CRUD operations on conversation history. Verify data model handles various message types correctly. Test session creation and retrieval with different parameters."
     },
     {
       "id": 4,
-      "title": "Develop AI Analysis Chain",
-      "description": "Create a separate Langchain chain for analyzing user's negotiation responses and providing feedback.",
+      "title": "Develop AI Analysis Feature",
+      "description": "Create functionality to analyze user responses and provide structured feedback on negotiation skills",
       "status": "pending",
       "dependencies": [
         2,
         3
       ],
       "priority": "medium",
-      "details": "Design prompt templates for the analysis chain focusing on 1-2 simple metrics (clarity, assertiveness). Implement a separate Langchain chain that takes the conversation context and user's latest message as input. Configure the chain to generate concise, actionable feedback. Ensure the analysis output is clearly differentiated from regular AI responses.",
-      "testStrategy": "Test analysis chain with various user messages. Verify feedback is relevant to negotiation skills. Check that analysis is concise and actionable. Test with edge cases like very short or unclear user messages.",
+      "details": "1. Design analysis prompt template with specific evaluation metrics (clarity, assertiveness)\n2. Implement Cloud Function to process user messages for analysis\n3. Create structured format for feedback responses\n4. Develop logic to determine when to trigger analysis (e.g., after X messages)\n5. Integrate analysis results into the conversation flow\n6. Store analysis results in Firestore linked to the conversation\n7. Implement error handling specific to analysis functionality",
+      "testStrategy": "Test analysis with various negotiation responses ranging from poor to excellent. Verify feedback is actionable and relevant. Test error cases and edge cases with unusual inputs.",
       "subtasks": [
         {
           "id": 1,
-          "title": "Design Analysis Prompt Templates",
-          "description": "Create specialized prompt templates for evaluating clarity and assertiveness in user negotiations",
+          "title": "Design Analysis Prompt Template and Define Evaluation Metrics",
+          "description": "Create a comprehensive prompt template for the AI to analyze negotiation responses and define clear evaluation metrics for assessment",
           "dependencies": [],
-          "details": "Implementation steps:\n1. Research effective metrics for evaluating clarity in negotiations (conciseness, use of specific terms, logical structure)\n2. Research metrics for assertiveness evaluation (confidence markers, direct requests, boundary setting)\n3. Create a detailed prompt template that instructs the AI to analyze these specific metrics\n4. Include clear rating scales (e.g., 1-5) for each metric with descriptions of what each level means\n5. Add examples of responses at different rating levels to calibrate the AI's evaluations\n6. Include instructions for providing actionable feedback based on the ratings\n\nTesting approach:\n- Test the prompt with sample negotiation responses of varying quality\n- Verify that feedback is consistent, specific, and actionable\n- Ensure the prompt produces concise evaluations that can be presented to users",
+          "details": "Implementation steps:\n1. Research effective negotiation evaluation frameworks\n2. Define 3-5 specific evaluation metrics (e.g., clarity, assertiveness, flexibility, empathy)\n3. Create scoring criteria for each metric (e.g., 1-5 scale with specific descriptions)\n4. Design a prompt template that instructs the AI to analyze responses according to these metrics\n5. Include instructions for providing constructive feedback in the prompt\n6. Create examples of good/poor responses for each metric as reference\n7. Test the prompt with sample negotiation responses\n8. Refine the prompt based on test results\n\nTesting approach:\n- Create a set of sample negotiation responses (varying in quality)\n- Test the prompt with these samples to ensure consistent and meaningful evaluations\n- Have team members review the analysis results for accuracy and helpfulness",
           "status": "pending",
           "parentTaskId": 4
         },
         {
           "id": 2,
-          "title": "Implement Metric Evaluation Logic",
-          "description": "Develop the core logic for evaluating clarity and assertiveness in user messages",
+          "title": "Implement Analysis Trigger Logic and Processing Function",
+          "description": "Develop the Cloud Function to process user messages and implement logic to determine when analysis should be triggered",
           "dependencies": [
             1
           ],
-          "details": "Implementation steps:\n1. Create a function to extract key elements from user messages that indicate clarity (sentence structure, specificity, organization)\n2. Develop logic to identify assertiveness markers (direct language, requests, confidence indicators)\n3. Implement scoring algorithms for each metric based on the prompt guidelines\n4. Create a structured output format that includes:\n   - Numerical scores for each metric\n   - Key strengths identified in the response\n   - Areas for improvement\n   - Specific suggestions for enhancement\n5. Add validation to ensure scores are within defined ranges\n\nTesting approach:\n- Unit test the evaluation functions with diverse input examples\n- Verify score consistency across similar messages\n- Test edge cases (very short responses, unclear messages, highly assertive language)",
+          "details": "Implementation steps:\n1. Create a new Cloud Function that accepts user messages for analysis\n2. Implement logic to determine when analysis should be triggered:\n   - After a specific number of user messages (configurable parameter)\n   - When user explicitly requests feedback\n   - At key negotiation stages (e.g., initial offer, counteroffers)\n3. Set up API call to the AI service using the prompt template from subtask 1\n4. Process the AI response to extract structured feedback\n5. Format the analysis results in a consistent structure (JSON)\n6. Implement error handling for API failures and unexpected responses\n7. Add logging for debugging and monitoring\n\nTesting approach:\n- Unit test the trigger logic with various conversation scenarios\n- Test the Cloud Function with mock API responses\n- End-to-end test with real API calls to verify correct processing\n- Verify error handling by simulating various failure conditions",
           "status": "pending",
           "parentTaskId": 4
         },
         {
           "id": 3,
-          "title": "Build Analysis Chain Architecture",
-          "description": "Construct the Langchain components for the analysis functionality",
+          "title": "Develop Analysis Storage and Conversation Integration",
+          "description": "Create the system to store analysis results in Firestore and integrate feedback into the conversation flow",
           "dependencies": [
-            1,
             2
           ],
-          "details": "Implementation steps:\n1. Import necessary Langchain components (LLMChain, PromptTemplate)\n2. Initialize the analysis chain with the designed prompt templates\n3. Configure the chain to accept two key inputs:\n   - Full conversation context (for understanding the negotiation flow)\n   - User's latest message (for focused analysis)\n4. Set up appropriate LLM parameters (temperature, max tokens) for consistent analysis\n5. Create a wrapper function that handles pre-processing of inputs and post-processing of outputs\n6. Implement error handling for cases where analysis cannot be completed\n\nTesting approach:\n- Test the chain with various conversation contexts and user messages\n- Verify that the chain correctly processes both inputs\n- Ensure the output format matches the expected structure\n- Test error handling by providing invalid inputs",
+          "details": "Implementation steps:\n1. Design Firestore schema for storing analysis results\n2. Create data model that links analysis results to specific conversations and messages\n3. Implement functions to save analysis results to Firestore\n4. Develop helper functions to retrieve and format analysis for display\n5. Integrate analysis results into the conversation flow:\n   - Format feedback messages for display in the chat\n   - Create UI components to present analysis in a user-friendly way\n   - Implement logic to present analysis at appropriate points in conversation\n6. Add functionality to allow users to request additional details on specific feedback points\n7. Implement caching for performance optimization\n\nTesting approach:\n- Verify correct storage and retrieval of analysis data\n- Test UI rendering of feedback in different conversation scenarios\n- Validate data integrity with concurrent analysis requests\n- Performance testing for large conversation histories",
           "status": "pending",
           "parentTaskId": 4
         },
         {
           "id": 4,
-          "title": "Format Analysis Output for User Presentation",
-          "description": "Design and implement the formatting of analysis results to make them clear and actionable for users",
+          "title": "Implement Testing Framework and Refine Analysis Quality",
+          "description": "Create a comprehensive testing framework to evaluate and improve the quality of negotiation analysis",
           "dependencies": [
+            1,
+            2,
             3
           ],
-          "details": "Implementation steps:\n1. Create a distinct visual style for analysis feedback (different from regular chat responses)\n2. Implement a formatter that structures the feedback into sections:\n   - Overall assessment summary (1-2 sentences)\n   - Clarity score with explanation\n   - Assertiveness score with explanation\n   - Actionable suggestions (2-3 bullet points)\n3. Add visual indicators for scores (e.g., progress bars, star ratings)\n4. Ensure the format is concise and scannable\n5. Implement conditional formatting based on score levels (highlight areas needing improvement)\n\nTesting approach:\n- Test the formatter with various analysis outputs\n- Verify that the formatting is consistent across different feedback types\n- Ensure the output is visually distinct from regular conversation\n- Test readability and scannability with different output lengths",
-          "status": "pending",
-          "parentTaskId": 4
-        },
-        {
-          "id": 5,
-          "title": "Integrate Analysis Chain with Main Conversation Flow",
-          "description": "Connect the analysis chain to the main conversation system to provide feedback at appropriate moments",
-          "dependencies": [
-            3,
-            4
-          ],
-          "details": "Implementation steps:\n1. Create an integration function that determines when to trigger the analysis chain\n2. Implement logic to decide appropriate moments for feedback (e.g., after user makes a significant negotiation point)\n3. Add a mechanism for users to explicitly request feedback on their latest message\n4. Ensure the analysis results are properly inserted into the conversation flow\n5. Add state management to track when feedback was last provided\n6. Implement a toggle for users to enable/disable automatic analysis\n\nTesting approach:\n- Test the integration in complete conversation flows\n- Verify that analysis is triggered at appropriate moments\n- Test the explicit feedback request functionality\n- Ensure the conversation flow remains natural when analysis is inserted\n- Test enabling/disabling the analysis feature",
-          "status": "pending",
-          "parentTaskId": 4
-        },
-        {
-          "id": 6,
-          "title": "Define Negotiation Analysis Metrics and Evaluation Criteria",
-          "description": "Define specific metrics for analyzing negotiation responses, focusing on clarity and assertiveness. Create detailed evaluation criteria for each metric that the AI can use to provide meaningful feedback.",
-          "dependencies": [],
-          "details": "1. Research and define clear parameters for measuring 'clarity' in negotiation responses (e.g., conciseness, specific asks, logical structure).\n2. Research and define parameters for measuring 'assertiveness' (e.g., confidence, boundary setting, value articulation).\n3. Create a scoring rubric for each metric (e.g., 1-5 scale with specific criteria for each level).\n4. Develop examples of responses at different levels for each metric to calibrate the analysis.\n5. Document these metrics and evaluation criteria in a structured format that can be referenced in prompts.\n6. Test the criteria with sample negotiation responses to ensure they provide meaningful differentiation.\n7. Testing approach: Manually review outputs against predefined test cases to ensure metrics capture the intended aspects of negotiation responses.",
-          "status": "pending",
-          "parentTaskId": 4
-        },
-        {
-          "id": 7,
-          "title": "Design Analysis Chain Prompt Templates",
-          "description": "Create prompt templates that instruct the LLM to analyze negotiation responses based on the defined metrics. These templates should guide the model to provide consistent, structured feedback.",
-          "dependencies": [
-            6
-          ],
-          "details": "1. Create a system prompt template that explains the analysis task and provides the evaluation criteria for clarity and assertiveness.\n2. Design a user message template that formats the conversation context and latest user message for analysis.\n3. Create an output format template that structures how feedback should be presented (e.g., scores, strengths, improvement areas).\n4. Include specific instructions in the prompt to ensure the model provides concrete, actionable feedback rather than vague observations.\n5. Add examples of well-analyzed responses in the prompt to demonstrate the expected analysis depth and format.\n6. Include safeguards to prevent the analysis chain from continuing the conversation instead of providing feedback.\n7. Testing approach: Test prompts with various negotiation scenarios to ensure consistent, helpful analysis across different contexts and response types.",
-          "status": "pending",
-          "parentTaskId": 4
-        },
-        {
-          "id": 8,
-          "title": "Implement Langchain Analysis Chain",
-          "description": "Build the Langchain component that processes user responses through the analysis templates and generates structured feedback using the LLM.",
-          "dependencies": [
-            7
-          ],
-          "details": "1. Import necessary Langchain components (e.g., LLMChain, PromptTemplate, ChatOpenAI).\n2. Initialize the language model with appropriate temperature settings for analytical tasks (lower temperature for more consistent analysis).\n3. Implement the prompt templates created in the previous subtask as Langchain PromptTemplates.\n4. Configure the Langchain to process conversation history and the latest user message.\n5. Create a function that extracts relevant context from the conversation history for analysis.\n6. Build the complete chain that connects these components to process input and generate feedback.\n7. Implement error handling for cases where analysis might fail.\n8. Testing approach: Unit test the chain with mock inputs to verify it correctly processes inputs and generates structured feedback.",
-          "status": "pending",
-          "parentTaskId": 4
-        },
-        {
-          "id": 9,
-          "title": "Integrate Analysis Chain and Format Output",
-          "description": "Integrate the analysis chain with the main application flow and implement formatting to clearly differentiate feedback from regular conversation responses.",
-          "dependencies": [
-            8
-          ],
-          "details": "1. Create an interface function that applications can call to analyze negotiation responses.\n2. Implement visual/formatting distinctions for analysis feedback (e.g., different color, styling, or prefixes).\n3. Add a toggle mechanism to enable/disable analysis feedback based on user preferences.\n4. Implement caching to avoid redundant analysis of the same message.\n5. Create a feedback presentation component that displays the analysis results in a user-friendly format.\n6. Add functionality to track improvement over time by storing analysis results.\n7. Document the integration points and usage examples for developers.\n8. Testing approach: Integration testing to ensure the analysis chain works correctly with the main application flow, and that feedback is properly formatted and displayed to users.",
+          "details": "Implementation steps:\n1. Develop a test suite with diverse negotiation scenarios and expected outcomes\n2. Create a feedback collection mechanism for users to rate the helpfulness of analysis\n3. Implement A/B testing capability to compare different prompt versions\n4. Set up analytics to track key metrics:\n   - Analysis accuracy (via user feedback)\n   - User improvement over time\n   - Common areas where users struggle\n5. Create a dashboard to visualize analysis quality metrics\n6. Develop a process for regular prompt refinement based on collected data\n7. Implement versioning for prompts to track changes and their impact\n8. Create documentation for maintaining and improving the analysis system\n\nTesting approach:\n- Run the test suite against multiple prompt versions\n- Conduct user testing sessions with real users\n- Analyze user feedback data to identify improvement areas\n- Verify that refinements to the prompts improve analysis quality metrics",
           "status": "pending",
           "parentTaskId": 4
         }
@@ -206,8 +140,8 @@
     },
     {
       "id": 5,
-      "title": "Build /chat_message API Endpoint",
-      "description": "Implement the primary API endpoint that handles user messages and returns AI responses with analysis.",
+      "title": "Create Primary Chat API Endpoint",
+      "description": "Develop the main chat endpoint that handles message processing, AI interaction, and returns responses to frontend",
       "status": "pending",
       "dependencies": [
         2,
@@ -215,60 +149,51 @@
         4
       ],
       "priority": "high",
-      "details": "Create POST endpoint at /chat_message that accepts context (for new sessions) and user message. Implement request validation for required fields. Connect endpoint to session manager to maintain conversation history. Integrate response chain and analysis chain, executing them sequentially. Format response to include both AI reply and analysis. Add appropriate error handling and logging.",
-      "testStrategy": "Test endpoint with valid requests and verify correct responses. Test session creation with new context. Test conversation continuation with existing sessions. Verify error responses for invalid inputs. Test performance with longer conversations.",
+      "details": "1. Create `/chat_message` HTTPS Cloud Function endpoint\n2. Implement request validation and parameter extraction\n3. Integrate session management to maintain conversation context\n4. Connect to Vertex AI for generating responses\n5. Include logic to trigger and incorporate analysis feedback when appropriate\n6. Structure response format for frontend consumption\n7. Implement comprehensive error handling and logging\n8. Add rate limiting and security measures",
+      "testStrategy": "Test the endpoint with various request scenarios including new sessions and existing sessions. Verify response format matches frontend requirements. Test error handling with malformed requests and API failures.",
       "subtasks": [
         {
           "id": 1,
-          "title": "Create basic /chat_message POST endpoint structure",
-          "description": "Set up the foundational structure for the /chat_message endpoint, including route definition, basic request handling, and skeleton response.",
+          "title": "Create HTTPS Cloud Function Endpoint with Request Validation",
+          "description": "Set up the basic `/chat_message` HTTPS Cloud Function endpoint with request validation and parameter extraction logic",
           "dependencies": [],
-          "details": "1. Create a new route handler for POST /chat_message\n2. Define the request body interface with 'context' and 'message' fields\n3. Set up a basic response structure that will eventually include AI reply and analysis\n4. Implement basic endpoint logging (request received, response sent)\n5. Add initial error handling structure with try/catch blocks\n6. Test the endpoint with Postman or curl to ensure it accepts requests and returns a placeholder response",
+          "details": "Implementation details:\n1. Create a new Cloud Function with HTTPS trigger at `/chat_message` endpoint\n2. Implement request schema validation to verify required parameters (userId, message, sessionId)\n3. Extract and sanitize request parameters\n4. Set up basic logging structure to track request processing\n5. Create the response structure template that will be populated later\n6. Implement initial error handling for malformed requests\n\nTesting approach:\n- Create unit tests for request validation with valid and invalid payloads\n- Test parameter extraction with various input formats\n- Verify error responses for invalid requests have appropriate status codes and messages",
           "status": "pending",
           "parentTaskId": 5
         },
         {
           "id": 2,
-          "title": "Implement request validation for /chat_message endpoint",
-          "description": "Add comprehensive validation for incoming requests to ensure all required fields are present and properly formatted.",
+          "title": "Implement Session Management and Context Handling",
+          "description": "Add session management functionality to maintain conversation context across multiple interactions",
           "dependencies": [
             1
           ],
-          "details": "1. Create validation schema for the request body (using a library like Joi, Zod, or similar)\n2. Validate that 'message' field is present and is a non-empty string\n3. Validate 'context' field structure when provided for new sessions\n4. Implement proper HTTP 400 error responses for validation failures with descriptive error messages\n5. Add validation for session ID if continuing an existing conversation\n6. Test the validation with various invalid request formats to ensure proper error handling",
+          "details": "Implementation details:\n1. Integrate with Firestore or similar database to store and retrieve session data\n2. Create functions to initialize new sessions when needed\n3. Implement logic to retrieve existing conversation history based on sessionId\n4. Design context window management to maintain appropriate conversation length\n5. Add functionality to update session data after each interaction\n6. Structure conversation history in a format suitable for AI model consumption\n\nTesting approach:\n- Test session creation, retrieval, and updating with mock database\n- Verify context windowing correctly limits conversation history\n- Test session continuity across multiple requests with the same sessionId\n- Validate error handling for session retrieval failures",
           "status": "pending",
           "parentTaskId": 5
         },
         {
           "id": 3,
-          "title": "Integrate session management with the /chat_message endpoint",
-          "description": "Connect the endpoint to the session manager to maintain conversation history across requests.",
+          "title": "Integrate Vertex AI and Implement Response Generation",
+          "description": "Connect to Vertex AI for generating responses and incorporate analysis feedback when appropriate",
           "dependencies": [
             1,
             2
           ],
-          "details": "1. Import and initialize the session manager in the endpoint handler\n2. Create logic to either create a new session (if no session ID provided) or retrieve an existing session\n3. Add the user message to the conversation history in the session\n4. Implement session timeout/expiration handling\n5. Ensure session state is properly saved after processing\n6. Add session-related error handling (e.g., session not found, session expired)\n7. Test session creation, retrieval, and conversation history maintenance across multiple requests",
+          "details": "Implementation details:\n1. Set up Vertex AI client integration with appropriate authentication\n2. Format conversation context from session data for the AI model\n3. Implement the main response generation logic using Vertex AI\n4. Create mechanism to determine when analysis feedback should be triggered\n5. Design logic to incorporate analysis results into the prompt or response\n6. Format AI responses for frontend consumption with necessary metadata\n7. Implement retry logic for AI service failures\n\nTesting approach:\n- Create mock Vertex AI responses to test integration\n- Test conversation formatting with various session histories\n- Verify analysis feedback integration works as expected\n- Test error handling for AI service failures\n- Validate response formatting meets frontend requirements",
           "status": "pending",
           "parentTaskId": 5
         },
         {
           "id": 4,
-          "title": "Implement chain execution in the /chat_message endpoint",
-          "description": "Integrate and sequentially execute the response chain and analysis chain to process user messages.",
+          "title": "Implement Security, Error Handling, and Performance Optimization",
+          "description": "Add security measures, comprehensive error handling, and performance optimizations to the chat endpoint",
           "dependencies": [
+            1,
+            2,
             3
           ],
-          "details": "1. Import response chain and analysis chain modules\n2. Set up the response chain execution with the user message and conversation history from the session\n3. Capture the AI response from the response chain\n4. Pass the AI response to the analysis chain\n5. Capture the analysis results\n6. Implement error handling for chain execution failures\n7. Add appropriate logging for chain execution steps\n8. Test the chains execute correctly and produce expected outputs",
-          "status": "pending",
-          "parentTaskId": 5
-        },
-        {
-          "id": 5,
-          "title": "Format response and implement comprehensive error handling",
-          "description": "Structure the API response to include both AI reply and analysis, and add robust error handling throughout the endpoint.",
-          "dependencies": [
-            4
-          ],
-          "details": "1. Create a standardized response format that includes AI response text, analysis results, and session information\n2. Implement HTTP status code selection based on different error conditions\n3. Add detailed error logging with appropriate severity levels\n4. Implement graceful degradation (e.g., return partial results if only one chain fails)\n5. Add performance metrics logging (response time, chain execution time)\n6. Sanitize any sensitive information from error messages and logs\n7. Test the endpoint with various edge cases and error conditions\n8. Document the API response format for frontend developers",
+          "details": "Implementation details:\n1. Implement rate limiting to prevent abuse (e.g., using Firebase or a custom solution)\n2. Add authentication verification to ensure only authorized users can access the endpoint\n3. Enhance error handling with detailed error codes and user-friendly messages\n4. Implement comprehensive logging for debugging and monitoring\n5. Add performance monitoring metrics (latency, success rate, etc.)\n6. Optimize response time by implementing caching where appropriate\n7. Set up appropriate CORS configuration for frontend access\n8. Implement request timeout handling\n\nTesting approach:\n- Test rate limiting with rapid successive requests\n- Verify authentication requirements prevent unauthorized access\n- Test error handling for various failure scenarios (AI unavailable, database errors, etc.)\n- Measure and validate performance under load\n- Test CORS configuration with frontend requests",
           "status": "pending",
           "parentTaskId": 5
         }
@@ -276,93 +201,91 @@
     },
     {
       "id": 6,
-      "title": "Setup Flutter Project Structure",
-      "description": "Initialize the Flutter mobile application project with basic structure and navigation.",
+      "title": "Set Up Flutter Project Structure",
+      "description": "Initialize Flutter application with appropriate project structure, theme, and navigation",
       "status": "pending",
       "dependencies": [],
       "priority": "high",
-      "details": "Create new Flutter project. Configure project structure with screens, widgets, models, and services folders. Setup basic theme and styling. Implement main app scaffold with minimal navigation (single screen for MVP). Install required dependencies for HTTP requests and state management.",
-      "testStrategy": "Verify app builds and runs on both Android and iOS. Test basic navigation and screen rendering. Ensure project structure follows best practices."
+      "details": "1. Create new Flutter project with recommended architecture\n2. Set up folder structure (screens, widgets, services, models)\n3. Configure theme and styling constants\n4. Implement basic navigation framework\n5. Add required dependencies in pubspec.yaml\n6. Configure platform-specific settings for iOS and Android\n7. Set up asset handling for images and other resources\n8. Create placeholder screens for main app sections",
+      "testStrategy": "Verify project builds successfully on both iOS and Android. Test basic navigation between placeholder screens. Ensure theme is consistently applied across components."
     },
     {
       "id": 7,
-      "title": "Implement Flutter UI Components",
-      "description": "Develop the core UI components for the chat interface including context input, message display, and text input.",
+      "title": "Develop Chat UI Components",
+      "description": "Create the core UI elements for the chat interface including message display and input areas",
       "status": "pending",
       "dependencies": [
         6
       ],
-      "priority": "medium",
-      "details": "Create ContextInputField widget for entering negotiation scenario. Implement ChatView widget to display conversation messages with different styles for user, AI, and analysis messages. Develop MessageInputArea widget with text field and send button. Ensure UI is responsive and adapts to different screen sizes. Implement basic loading indicators for API requests.",
-      "testStrategy": "Test UI rendering on different device sizes. Verify input fields accept and validate text correctly. Test scrolling behavior in chat view with many messages. Ensure keyboard handling works properly."
+      "priority": "high",
+      "details": "1. Design and implement chat message bubbles for user and AI messages\n2. Create distinct visual style for analysis feedback messages\n3. Implement chat view with scrolling message list\n4. Develop context input field for initial scenario setup\n5. Create message input area with send button\n6. Add loading indicators for API operations\n7. Implement responsive design for different screen sizes\n8. Create animations for message transitions",
+      "testStrategy": "Create widget tests for UI components. Test responsiveness on different screen sizes. Verify accessibility features work correctly. Test UI with various message lengths and content types."
     },
     {
       "id": 8,
-      "title": "Create Frontend API Client",
-      "description": "Implement a service in Flutter to communicate with the backend API endpoints.",
+      "title": "Implement API Client Service",
+      "description": "Create service layer in Flutter to communicate with backend API endpoints",
       "status": "pending",
       "dependencies": [
         6
       ],
       "priority": "medium",
-      "details": "Create ApiService class to handle HTTP requests to backend. Implement methods for sending messages and context to /chat_message endpoint. Add error handling for network issues and API errors. Create data models matching backend (ChatMessage, ChatSession). Implement serialization/deserialization of API requests and responses.",
-      "testStrategy": "Test API client with mock responses. Verify correct handling of successful responses and errors. Test timeout handling and retry logic. Ensure data models correctly parse API responses."
+      "details": "1. Create API client service class\n2. Implement methods for all backend endpoints (health check, chat, etc.)\n3. Add request/response serialization and deserialization\n4. Implement error handling and retry logic\n5. Create models for structured data exchange\n6. Add authentication handling if required\n7. Implement timeout handling and connection status monitoring\n8. Create mock API responses for development and testing",
+      "testStrategy": "Write unit tests for API client methods. Test serialization/deserialization with sample data. Verify error handling works correctly for various failure scenarios. Test with mock responses before connecting to real backend."
     },
     {
       "id": 9,
-      "title": "Implement Chat State Management",
-      "description": "Create state management solution to handle the chat session state in the Flutter app.",
+      "title": "Implement State Management",
+      "description": "Develop state management solution to handle chat session state and UI updates",
       "status": "pending",
       "dependencies": [
         7,
         8
       ],
       "priority": "medium",
-      "details": "Implement ChatController or state management class to maintain current conversation state. Create methods to add new messages, send messages to API, and update UI. Implement loading states for pending API requests. Handle displaying AI responses and analysis in the chat view. Manage context input visibility based on session state.",
-      "testStrategy": "Test state updates when sending messages. Verify UI updates correctly when new messages arrive. Test error handling and recovery. Ensure state is maintained consistently throughout the chat flow.",
+      "details": "1. Choose appropriate state management approach (Provider, Bloc, etc.)\n2. Implement chat session state model\n3. Create state transitions for loading, success, and error states\n4. Connect UI components to state\n5. Implement message handling logic\n6. Add session persistence for app restarts\n7. Create actions for user interactions (send message, start new session)\n8. Implement analytics tracking for key user actions",
+      "testStrategy": "Write unit tests for state transitions. Test state persistence across app restarts. Verify UI correctly reflects different states. Test concurrent operations and error recovery.",
       "subtasks": [
         {
           "id": 1,
-          "title": "Create ChatController class with basic state structure",
-          "description": "Implement the core ChatController class with state management capabilities to maintain the chat session state",
+          "title": "Set up State Management Architecture and Models",
+          "description": "Establish the core state management architecture and define data models for the chat session state",
           "dependencies": [],
-          "details": "1. Create a new ChatController class that will use a state management approach (e.g., Provider, Bloc, or GetX)\n2. Define the core state properties: messages list, loading status, error state, and context input visibility flag\n3. Implement basic state initialization and reset functionality\n4. Create a message model class with fields for content, timestamp, sender (user/AI), and message status\n5. Add methods to get the current state and listen to state changes\n6. Test the controller initialization and basic state management with unit tests",
+          "details": "Implementation details:\n1. Choose and set up a state management approach (Provider recommended for simplicity, or BLoC for more complex scenarios)\n2. Define ChatSession model with properties for messages, session status, user info, and timestamps\n3. Create Message model with properties for content, timestamp, sender, status (sent/delivered/read)\n4. Implement ChatState class with different state types (initial, loading, loaded, error)\n5. Set up the basic state container that will hold the application state\n6. Define interfaces for state operations\n\nTesting approach:\n- Unit test the models with sample data\n- Verify state transitions work correctly in isolation\n- Test serialization/deserialization of models for persistence",
           "status": "pending",
           "parentTaskId": 9
         },
         {
           "id": 2,
-          "title": "Implement message handling and management methods",
-          "description": "Add methods to the ChatController for adding, updating, and managing messages in the conversation",
+          "title": "Implement UI State Binding and Transitions",
+          "description": "Connect UI components to state and implement state transitions for different app states",
           "dependencies": [
             1
           ],
-          "details": "1. Implement addMessage() method to add new user messages to the state\n2. Create updateMessage() method to modify existing messages (e.g., when API responses arrive)\n3. Add message validation logic to prevent empty messages\n4. Implement methods to clear conversation history or remove specific messages\n5. Add functionality to track and manage message status (sending, sent, failed, etc.)\n6. Create methods to handle typing indicators and message timestamps\n7. Test message addition, updating, and management with unit tests to verify correct state transitions",
+          "details": "Implementation details:\n1. Create state provider/bloc that UI components can listen to\n2. Implement loading, success, and error states with appropriate UI feedback\n3. Set up state listeners in chat screen and message list components\n4. Create UI update mechanisms that respond to state changes\n5. Implement conditional rendering based on current state (loading spinner, error messages, etc.)\n6. Add animations for state transitions where appropriate\n\nTesting approach:\n- Write widget tests to verify UI updates correctly when state changes\n- Test edge cases like empty states and error handling\n- Verify loading indicators appear and disappear appropriately",
           "status": "pending",
           "parentTaskId": 9
         },
         {
           "id": 3,
-          "title": "Integrate API communication for sending and receiving messages",
-          "description": "Add API integration to the ChatController to handle sending messages and processing responses",
+          "title": "Implement User Actions and Session Persistence",
+          "description": "Create actions for user interactions and implement session persistence across app restarts",
           "dependencies": [
             1,
             2
           ],
-          "details": "1. Create methods to prepare and send messages to the API endpoint\n2. Implement loading state management during API requests\n3. Add error handling for API communication failures\n4. Process API responses and update the message state accordingly\n5. Implement retry logic for failed message sends\n6. Create methods to handle AI analysis responses and special message types\n7. Add rate limiting or throttling if needed\n8. Test API integration with mock HTTP client to verify correct handling of success and error scenarios",
+          "details": "Implementation details:\n1. Implement action handlers for user interactions (send message, start new chat, etc.)\n2. Create a message queue system to handle message sending states\n3. Implement optimistic updates for better UX\n4. Set up local storage for persisting chat sessions (using SharedPreferences or Hive)\n5. Implement serialization/deserialization of chat state\n6. Add logic to restore state when app restarts\n7. Handle edge cases like failed message sends and retry mechanisms\n\nTesting approach:\n- Test persistence by simulating app restarts\n- Verify all user actions correctly modify the state\n- Test offline capabilities and synchronization\n- Verify error handling and retry mechanisms work as expected",
           "status": "pending",
           "parentTaskId": 9
         },
         {
           "id": 4,
-          "title": "Implement UI state coordination and context visibility management",
-          "description": "Add methods to coordinate UI updates based on chat state and manage context input visibility",
+          "title": "Integrate Analytics and Performance Monitoring",
+          "description": "Add analytics tracking for key user actions and optimize state management performance",
           "dependencies": [
-            1,
-            2,
             3
           ],
-          "details": "1. Create methods to notify UI of state changes for efficient rebuilds\n2. Implement logic to manage context input visibility based on session state\n3. Add functionality to scroll to latest messages automatically\n4. Create methods to handle UI-specific states like scrolling position and focus management\n5. Implement methods to track and display typing indicators\n6. Add support for UI theming based on message sender\n7. Create integration tests to verify correct UI updates in response to state changes\n8. Implement methods to handle different view states (empty chat, loading, error, active conversation)",
+          "details": "Implementation details:\n1. Define key events to track (session start, message sent, errors encountered)\n2. Integrate analytics service (Firebase Analytics or similar)\n3. Add analytics event tracking to key user actions\n4. Implement custom analytics parameters for detailed tracking\n5. Set up performance monitoring for state transitions\n6. Optimize state updates to prevent unnecessary rebuilds\n7. Add logging for debugging state issues\n\nTesting approach:\n- Verify analytics events are fired correctly using debug mode\n- Test performance with large chat histories\n- Measure and optimize rebuild counts\n- Ensure analytics doesn't impact app performance",
           "status": "pending",
           "parentTaskId": 9
         }
@@ -370,22 +293,69 @@
     },
     {
       "id": 10,
-      "title": "Integrate and Test Complete Chat Flow",
-      "description": "Connect all components to implement the complete chat flow and perform end-to-end testing.",
+      "title": "Integrate End-to-End Functionality",
+      "description": "Connect all frontend and backend components to enable complete user flow from context input to chat with feedback",
       "status": "pending",
       "dependencies": [
         5,
         9
       ],
       "priority": "high",
-      "details": "Connect Flutter UI components with state management and API client. Implement the full user flow from context input to message exchange with AI. Add final error handling and loading states. Perform comprehensive testing of the entire application flow. Optimize performance and fix any integration issues.",
-      "testStrategy": "Perform end-to-end testing of the complete user flow. Test with various negotiation scenarios and message types. Verify AI responses and analysis display correctly. Test error recovery and edge cases. Conduct usability testing with sample users if possible."
+      "details": "1. Connect Flutter app to deployed Cloud Functions\n2. Implement complete user flow from app launch to chat completion\n3. Add session management UI (create new, resume existing)\n4. Integrate context input with chat initialization\n5. Connect chat UI to backend via API client\n6. Implement proper handling of analysis feedback in the UI\n7. Add error handling and recovery for end-user experience\n8. Perform end-to-end testing and bug fixes",
+      "testStrategy": "Conduct full end-to-end testing of user flows. Test with various network conditions including poor connectivity. Verify all components work together correctly. Test on multiple device types and OS versions.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Set Up Backend-Frontend Connection",
+          "description": "Implement API client in the Flutter app to connect with deployed Cloud Functions",
+          "dependencies": [],
+          "details": "Implementation details:\n1. Create an API client class in the Flutter app that handles HTTP requests to the Cloud Functions\n2. Implement authentication handling for secure API calls\n3. Define API endpoints for all required functionality (context submission, chat initialization, message sending/receiving)\n4. Create response models to parse API responses\n5. Implement error handling for network issues and API errors\n6. Add logging for debugging purposes\n\nTesting approach:\n1. Write unit tests for the API client methods\n2. Create mock responses to test parsing logic\n3. Test authentication flow\n4. Verify proper error handling with intentionally failed requests",
+          "status": "pending",
+          "parentTaskId": 10
+        },
+        {
+          "id": 2,
+          "title": "Implement Complete User Flow",
+          "description": "Connect all UI components with backend services to create seamless user experience from app launch to chat completion",
+          "dependencies": [
+            1
+          ],
+          "details": "Implementation details:\n1. Integrate context input UI with the API client to submit user context\n2. Connect chat initialization with context processing results\n3. Implement message sending/receiving in the chat UI using the API client\n4. Add loading states and progress indicators during API calls\n5. Implement proper state management to maintain conversation flow\n6. Connect analysis feedback components to display insights from backend\n7. Ensure proper data flow between all screens and components\n\nTesting approach:\n1. Create integration tests for the main user flows\n2. Test with various input scenarios (short/long context, different types of queries)\n3. Verify that UI updates correctly based on backend responses\n4. Test navigation between different screens in the flow",
+          "status": "pending",
+          "parentTaskId": 10
+        },
+        {
+          "id": 3,
+          "title": "Implement Session Management and Error Handling",
+          "description": "Add functionality to manage chat sessions and implement comprehensive error handling for better user experience",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implementation details:\n1. Create session management UI (create new session, resume existing session)\n2. Implement local storage for saving session data\n3. Add session synchronization with backend\n4. Implement error recovery mechanisms for various failure scenarios\n5. Create user-friendly error messages for different types of errors\n6. Add retry functionality for failed operations\n7. Implement offline mode detection and appropriate user feedback\n8. Add session timeout handling and reconnection logic\n\nTesting approach:\n1. Test session creation, saving, and resuming\n2. Simulate various error conditions and verify recovery\n3. Test app behavior under poor network conditions\n4. Verify that user data is properly persisted between sessions",
+          "status": "pending",
+          "parentTaskId": 10
+        },
+        {
+          "id": 4,
+          "title": "Perform End-to-End Testing and Optimization",
+          "description": "Conduct comprehensive testing, fix bugs, and optimize performance across the entire application",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "Implementation details:\n1. Create end-to-end test scenarios covering all user flows\n2. Implement automated UI tests for critical paths\n3. Conduct performance profiling to identify bottlenecks\n4. Optimize API calls (implement caching, reduce payload size)\n5. Improve UI rendering performance\n6. Fix identified bugs and issues\n7. Implement analytics to track user behavior and error rates\n8. Conduct usability testing and implement feedback\n\nTesting approach:\n1. Run comprehensive test suite across different devices and screen sizes\n2. Measure and benchmark performance metrics (response times, memory usage)\n3. Conduct beta testing with real users\n4. Verify analytics data collection accuracy\n5. Test edge cases and uncommon usage patterns",
+          "status": "pending",
+          "parentTaskId": 10
+        }
+      ]
     }
   ],
   "metadata": {
     "projectName": "Boss Brawler - Negotiation Practice App",
     "totalTasks": 10,
-    "sourceFile": "prd.txt",
+    "sourceFile": "scripts/prd.txt",
     "generatedAt": "2023-12-15"
   }
 }

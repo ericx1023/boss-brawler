@@ -1,1 +1,29 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"boss-brawler","configurations":{"android":"1:750386372057:android:093bb9675eda934732cdc8","ios":"1:750386372057:ios:2675ae408b9b474732cdc8","web":"1:750386372057:web:4df58b40bdd39d5132cdc8"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "boss-brawler",
+          "configurations": {
+            "android": "1:750386372057:android:093bb9675eda934732cdc8",
+            "ios": "1:750386372057:ios:2675ae408b9b474732cdc8",
+            "web": "1:750386372057:web:4df58b40bdd39d5132cdc8"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

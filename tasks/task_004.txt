@@ -1,0 +1,160 @@
+# Task ID: 4
+# Title: Develop AI Analysis Chain
+# Status: pending
+# Dependencies: 2, 3
+# Priority: medium
+# Description: Create a separate Langchain chain for analyzing user's negotiation responses and providing feedback.
+# Details:
+Design prompt templates for the analysis chain focusing on 1-2 simple metrics (clarity, assertiveness). Implement a separate Langchain chain that takes the conversation context and user's latest message as input. Configure the chain to generate concise, actionable feedback. Ensure the analysis output is clearly differentiated from regular AI responses.
+
+# Test Strategy:
+Test analysis chain with various user messages. Verify feedback is relevant to negotiation skills. Check that analysis is concise and actionable. Test with edge cases like very short or unclear user messages.
+
+# Subtasks:
+## 1. Design Analysis Prompt Templates [pending]
+### Dependencies: None
+### Description: Create specialized prompt templates for evaluating clarity and assertiveness in user negotiations
+### Details:
+Implementation steps:
+1. Research effective metrics for evaluating clarity in negotiations (conciseness, use of specific terms, logical structure)
+2. Research metrics for assertiveness evaluation (confidence markers, direct requests, boundary setting)
+3. Create a detailed prompt template that instructs the AI to analyze these specific metrics
+4. Include clear rating scales (e.g., 1-5) for each metric with descriptions of what each level means
+5. Add examples of responses at different rating levels to calibrate the AI's evaluations
+6. Include instructions for providing actionable feedback based on the ratings
+
+Testing approach:
+- Test the prompt with sample negotiation responses of varying quality
+- Verify that feedback is consistent, specific, and actionable
+- Ensure the prompt produces concise evaluations that can be presented to users
+
+## 2. Implement Metric Evaluation Logic [pending]
+### Dependencies: 4.1
+### Description: Develop the core logic for evaluating clarity and assertiveness in user messages
+### Details:
+Implementation steps:
+1. Create a function to extract key elements from user messages that indicate clarity (sentence structure, specificity, organization)
+2. Develop logic to identify assertiveness markers (direct language, requests, confidence indicators)
+3. Implement scoring algorithms for each metric based on the prompt guidelines
+4. Create a structured output format that includes:
+   - Numerical scores for each metric
+   - Key strengths identified in the response
+   - Areas for improvement
+   - Specific suggestions for enhancement
+5. Add validation to ensure scores are within defined ranges
+
+Testing approach:
+- Unit test the evaluation functions with diverse input examples
+- Verify score consistency across similar messages
+- Test edge cases (very short responses, unclear messages, highly assertive language)
+
+## 3. Build Analysis Chain Architecture [pending]
+### Dependencies: 4.1, 4.2
+### Description: Construct the Langchain components for the analysis functionality
+### Details:
+Implementation steps:
+1. Import necessary Langchain components (LLMChain, PromptTemplate)
+2. Initialize the analysis chain with the designed prompt templates
+3. Configure the chain to accept two key inputs:
+   - Full conversation context (for understanding the negotiation flow)
+   - User's latest message (for focused analysis)
+4. Set up appropriate LLM parameters (temperature, max tokens) for consistent analysis
+5. Create a wrapper function that handles pre-processing of inputs and post-processing of outputs
+6. Implement error handling for cases where analysis cannot be completed
+
+Testing approach:
+- Test the chain with various conversation contexts and user messages
+- Verify that the chain correctly processes both inputs
+- Ensure the output format matches the expected structure
+- Test error handling by providing invalid inputs
+
+## 4. Format Analysis Output for User Presentation [pending]
+### Dependencies: 4.3
+### Description: Design and implement the formatting of analysis results to make them clear and actionable for users
+### Details:
+Implementation steps:
+1. Create a distinct visual style for analysis feedback (different from regular chat responses)
+2. Implement a formatter that structures the feedback into sections:
+   - Overall assessment summary (1-2 sentences)
+   - Clarity score with explanation
+   - Assertiveness score with explanation
+   - Actionable suggestions (2-3 bullet points)
+3. Add visual indicators for scores (e.g., progress bars, star ratings)
+4. Ensure the format is concise and scannable
+5. Implement conditional formatting based on score levels (highlight areas needing improvement)
+
+Testing approach:
+- Test the formatter with various analysis outputs
+- Verify that the formatting is consistent across different feedback types
+- Ensure the output is visually distinct from regular conversation
+- Test readability and scannability with different output lengths
+
+## 5. Integrate Analysis Chain with Main Conversation Flow [pending]
+### Dependencies: 4.3, 4.4
+### Description: Connect the analysis chain to the main conversation system to provide feedback at appropriate moments
+### Details:
+Implementation steps:
+1. Create an integration function that determines when to trigger the analysis chain
+2. Implement logic to decide appropriate moments for feedback (e.g., after user makes a significant negotiation point)
+3. Add a mechanism for users to explicitly request feedback on their latest message
+4. Ensure the analysis results are properly inserted into the conversation flow
+5. Add state management to track when feedback was last provided
+6. Implement a toggle for users to enable/disable automatic analysis
+
+Testing approach:
+- Test the integration in complete conversation flows
+- Verify that analysis is triggered at appropriate moments
+- Test the explicit feedback request functionality
+- Ensure the conversation flow remains natural when analysis is inserted
+- Test enabling/disabling the analysis feature
+
+## 6. Define Negotiation Analysis Metrics and Evaluation Criteria [pending]
+### Dependencies: None
+### Description: Define specific metrics for analyzing negotiation responses, focusing on clarity and assertiveness. Create detailed evaluation criteria for each metric that the AI can use to provide meaningful feedback.
+### Details:
+1. Research and define clear parameters for measuring 'clarity' in negotiation responses (e.g., conciseness, specific asks, logical structure).
+2. Research and define parameters for measuring 'assertiveness' (e.g., confidence, boundary setting, value articulation).
+3. Create a scoring rubric for each metric (e.g., 1-5 scale with specific criteria for each level).
+4. Develop examples of responses at different levels for each metric to calibrate the analysis.
+5. Document these metrics and evaluation criteria in a structured format that can be referenced in prompts.
+6. Test the criteria with sample negotiation responses to ensure they provide meaningful differentiation.
+7. Testing approach: Manually review outputs against predefined test cases to ensure metrics capture the intended aspects of negotiation responses.
+
+## 7. Design Analysis Chain Prompt Templates [pending]
+### Dependencies: 4.6
+### Description: Create prompt templates that instruct the LLM to analyze negotiation responses based on the defined metrics. These templates should guide the model to provide consistent, structured feedback.
+### Details:
+1. Create a system prompt template that explains the analysis task and provides the evaluation criteria for clarity and assertiveness.
+2. Design a user message template that formats the conversation context and latest user message for analysis.
+3. Create an output format template that structures how feedback should be presented (e.g., scores, strengths, improvement areas).
+4. Include specific instructions in the prompt to ensure the model provides concrete, actionable feedback rather than vague observations.
+5. Add examples of well-analyzed responses in the prompt to demonstrate the expected analysis depth and format.
+6. Include safeguards to prevent the analysis chain from continuing the conversation instead of providing feedback.
+7. Testing approach: Test prompts with various negotiation scenarios to ensure consistent, helpful analysis across different contexts and response types.
+
+## 8. Implement Langchain Analysis Chain [pending]
+### Dependencies: 4.7
+### Description: Build the Langchain component that processes user responses through the analysis templates and generates structured feedback using the LLM.
+### Details:
+1. Import necessary Langchain components (e.g., LLMChain, PromptTemplate, ChatOpenAI).
+2. Initialize the language model with appropriate temperature settings for analytical tasks (lower temperature for more consistent analysis).
+3. Implement the prompt templates created in the previous subtask as Langchain PromptTemplates.
+4. Configure the Langchain to process conversation history and the latest user message.
+5. Create a function that extracts relevant context from the conversation history for analysis.
+6. Build the complete chain that connects these components to process input and generate feedback.
+7. Implement error handling for cases where analysis might fail.
+8. Testing approach: Unit test the chain with mock inputs to verify it correctly processes inputs and generates structured feedback.
+
+## 9. Integrate Analysis Chain and Format Output [pending]
+### Dependencies: 4.8
+### Description: Integrate the analysis chain with the main application flow and implement formatting to clearly differentiate feedback from regular conversation responses.
+### Details:
+1. Create an interface function that applications can call to analyze negotiation responses.
+2. Implement visual/formatting distinctions for analysis feedback (e.g., different color, styling, or prefixes).
+3. Add a toggle mechanism to enable/disable analysis feedback based on user preferences.
+4. Implement caching to avoid redundant analysis of the same message.
+5. Create a feedback presentation component that displays the analysis results in a user-friendly format.
+6. Add functionality to track improvement over time by storing analysis results.
+7. Document the integration points and usage examples for developers.
+8. Testing approach: Integration testing to ensure the analysis chain works correctly with the main application flow, and that feedback is properly formatted and displayed to users.
+

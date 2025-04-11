@@ -20,7 +20,7 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-  static const title = 'Example: Google Gemini AI';
+  static const title = 'Boss Brawler';
 
   const App({super.key});
 

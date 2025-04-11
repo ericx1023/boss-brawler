@@ -1,0 +1,11 @@
+# Task ID: 3
+# Title: Implement In-Memory Conversation Storage
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Create a simple in-memory storage mechanism to maintain conversation history during a chat session.
+# Details:
+Implement ChatMessage and ChatSession data models as defined in the PRD. Create a SessionManager service to handle creation and retrieval of chat sessions. Use Langchain's Memory modules for maintaining conversation context. Implement methods to add new messages to a session and retrieve full conversation history.
+
+# Test Strategy:
+Test creating new sessions with context. Verify messages can be added to sessions. Test retrieving conversation history. Ensure session state is maintained correctly between requests.

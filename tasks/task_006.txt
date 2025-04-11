@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Setup Flutter Project Structure
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Initialize the Flutter mobile application project with basic structure and navigation.
+# Details:
+Create new Flutter project. Configure project structure with screens, widgets, models, and services folders. Setup basic theme and styling. Implement main app scaffold with minimal navigation (single screen for MVP). Install required dependencies for HTTP requests and state management.
+
+# Test Strategy:
+Verify app builds and runs on both Android and iOS. Test basic navigation and screen rendering. Ensure project structure follows best practices.

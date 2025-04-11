@@ -1,0 +1,11 @@
+# Task ID: 1
+# Title: Setup Backend Project Structure
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Initialize the Python backend project with FastAPI/Flask, configure project structure, and setup basic API routing.
+# Details:
+Create a new Python project with virtual environment. Install FastAPI/Flask and required dependencies. Setup project structure with routes, controllers, and services folders. Implement health check endpoint and basic error handling middleware. Configure CORS to allow requests from Flutter app.
+
+# Test Strategy:
+Verify server starts correctly. Test health check endpoint returns 200 OK. Ensure CORS headers are properly set for cross-origin requests.

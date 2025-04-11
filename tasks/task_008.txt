@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Create Frontend API Client
+# Status: pending
+# Dependencies: 6
+# Priority: medium
+# Description: Implement a service in Flutter to communicate with the backend API endpoints.
+# Details:
+Create ApiService class to handle HTTP requests to backend. Implement methods for sending messages and context to /chat_message endpoint. Add error handling for network issues and API errors. Create data models matching backend (ChatMessage, ChatSession). Implement serialization/deserialization of API requests and responses.
+
+# Test Strategy:
+Test API client with mock responses. Verify correct handling of successful responses and errors. Test timeout handling and retry logic. Ensure data models correctly parse API responses.

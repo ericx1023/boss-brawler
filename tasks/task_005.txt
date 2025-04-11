@@ -1,0 +1,73 @@
+# Task ID: 5
+# Title: Build /chat_message API Endpoint
+# Status: pending
+# Dependencies: 2, 3, 4
+# Priority: high
+# Description: Implement the primary API endpoint that handles user messages and returns AI responses with analysis.
+# Details:
+Create POST endpoint at /chat_message that accepts context (for new sessions) and user message. Implement request validation for required fields. Connect endpoint to session manager to maintain conversation history. Integrate response chain and analysis chain, executing them sequentially. Format response to include both AI reply and analysis. Add appropriate error handling and logging.
+
+# Test Strategy:
+Test endpoint with valid requests and verify correct responses. Test session creation with new context. Test conversation continuation with existing sessions. Verify error responses for invalid inputs. Test performance with longer conversations.
+
+# Subtasks:
+## 1. Create basic /chat_message POST endpoint structure [pending]
+### Dependencies: None
+### Description: Set up the foundational structure for the /chat_message endpoint, including route definition, basic request handling, and skeleton response.
+### Details:
+1. Create a new route handler for POST /chat_message
+2. Define the request body interface with 'context' and 'message' fields
+3. Set up a basic response structure that will eventually include AI reply and analysis
+4. Implement basic endpoint logging (request received, response sent)
+5. Add initial error handling structure with try/catch blocks
+6. Test the endpoint with Postman or curl to ensure it accepts requests and returns a placeholder response
+
+## 2. Implement request validation for /chat_message endpoint [pending]
+### Dependencies: 5.1
+### Description: Add comprehensive validation for incoming requests to ensure all required fields are present and properly formatted.
+### Details:
+1. Create validation schema for the request body (using a library like Joi, Zod, or similar)
+2. Validate that 'message' field is present and is a non-empty string
+3. Validate 'context' field structure when provided for new sessions
+4. Implement proper HTTP 400 error responses for validation failures with descriptive error messages
+5. Add validation for session ID if continuing an existing conversation
+6. Test the validation with various invalid request formats to ensure proper error handling
+
+## 3. Integrate session management with the /chat_message endpoint [pending]
+### Dependencies: 5.1, 5.2
+### Description: Connect the endpoint to the session manager to maintain conversation history across requests.
+### Details:
+1. Import and initialize the session manager in the endpoint handler
+2. Create logic to either create a new session (if no session ID provided) or retrieve an existing session
+3. Add the user message to the conversation history in the session
+4. Implement session timeout/expiration handling
+5. Ensure session state is properly saved after processing
+6. Add session-related error handling (e.g., session not found, session expired)
+7. Test session creation, retrieval, and conversation history maintenance across multiple requests
+
+## 4. Implement chain execution in the /chat_message endpoint [pending]
+### Dependencies: 5.3
+### Description: Integrate and sequentially execute the response chain and analysis chain to process user messages.
+### Details:
+1. Import response chain and analysis chain modules
+2. Set up the response chain execution with the user message and conversation history from the session
+3. Capture the AI response from the response chain
+4. Pass the AI response to the analysis chain
+5. Capture the analysis results
+6. Implement error handling for chain execution failures
+7. Add appropriate logging for chain execution steps
+8. Test the chains execute correctly and produce expected outputs
+
+## 5. Format response and implement comprehensive error handling [pending]
+### Dependencies: 5.4
+### Description: Structure the API response to include both AI reply and analysis, and add robust error handling throughout the endpoint.
+### Details:
+1. Create a standardized response format that includes AI response text, analysis results, and session information
+2. Implement HTTP status code selection based on different error conditions
+3. Add detailed error logging with appropriate severity levels
+4. Implement graceful degradation (e.g., return partial results if only one chain fails)
+5. Add performance metrics logging (response time, chain execution time)
+6. Sanitize any sensitive information from error messages and logs
+7. Test the endpoint with various edge cases and error conditions
+8. Document the API response format for frontend developers
+

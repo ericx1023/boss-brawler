@@ -1,0 +1,33 @@
+This is negotiation training app called ‘Boss Brawler' using flutter
+In the main page, it should have: 
+    - A chat section with a negotiation coach, 
+    - A context input field for user to provide context/situation to the coach,
+    - text / voice input to send messages to the coach,
+    - a hamburger menu icon to open a side panel with the following options:
+        - Home
+        - Chat Histories
+        - Progress Report
+        - Settings
+In a chat, follow the life cycle of a chat:
+	1. User Initial Input - 
+    2. Coach Response - 
+    3. User conter response 
+	4. AI analyze the counter response, provide Summary - good or bad - Improvement
+	5. User's Response Choice
+        1. contunie? -  goto 2 base on the summary,. 
+        2. end chat - End chat
+        3. provide more context - goto 1.
+        4. ask for clarification - goto 2.
+
+
+on the backend I want to use langchain and gemini for the chat
+I want the app has memory, so it can remember the conversation history and list in the history page.
+It also need system prompt to be able to provide general instructions.
+
+
+Now play the role as engineer manager, help me think through the core features of implementing such app.
+
+
+
+
+

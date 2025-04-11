@@ -1,0 +1,97 @@
+<context>
+# Overview  
+Boss Brawler is a Flutter-based mobile application designed to help users improve their negotiation skills through interactive chat sessions with an AI-powered coach. It solves the problem of lacking safe and accessible spaces to practice negotiation tactics. The target audience includes professionals, students, and anyone looking to enhance their negotiation capabilities. The value lies in providing personalized feedback and iterative practice opportunities.
+
+# Core Features (MVP)
+- **Context Input:** Allows users to provide a brief text description of the negotiation scenario before starting a chat.
+    - *Importance:* Sets the stage for the AI coach and makes the practice relevant.
+    - *How it works:* A simple text field on the main screen. The content is sent to the backend when starting a new chat.
+- **Text-Based Chat Interface:** Enables users to send text messages to the AI coach and view the conversation history within the current session.
+    - *Importance:* The primary interaction method for the negotiation practice.
+    - *How it works:* A standard chat UI displaying user messages and AI responses sequentially. Includes a text input field and send button.
+- **AI Coach Response:** The AI coach (powered by Gemini via Langchain) provides responses based on the user's input and the provided context.
+    - *Importance:* Simulates the other party in a negotiation.
+    - *How it works:* The backend receives the user's message, processes it using a Langchain chain integrating Gemini, and returns the AI's response to the frontend.
+- **User Counter-Response:** Users can type and send their replies/counter-offers to the AI coach's messages.
+    - *Importance:* Allows users to practice formulating negotiation arguments.
+    - *How it works:* User types in the `MessageInputArea` and sends.
+- **Basic AI Analysis:** After a user's counter-response, the AI provides a simple analysis.
+    - *Importance:* Delivers the core value proposition – feedback on negotiation attempts.
+    - *How it works:* A separate Langchain chain/prompt is triggered after the user's counter-response. It uses Gemini to evaluate the response based on predefined basic criteria (e.g., clarity, assertiveness - simplified for MVP) and provides a short textual summary (e.g., "Good points, but could be more concise.")
+- **In-Session Memory:** The AI coach remembers the conversation flow within a single, ongoing chat session.
+    - *Importance:* Provides conversational context for coherent interaction.
+    - *How it works:* Implemented using Langchain's basic `Memory` modules on the backend. History is lost when the app closes or a new chat starts.
+
+# User Experience (MVP)
+- **User Persona:** "Aspiring Negotiator" - Someone new to negotiation or seeking to practice foundational skills.
+- **Key User Flow:**
+    1. User opens the app.
+    2. User enters negotiation context into the `ContextInputField`.
+    3. User sends an initial message via the `MessageInputArea`.
+    4. AI Coach responds in the `ChatView`.
+    5. User sends a counter-response.
+    6. AI provides brief feedback below the user's counter-response in the `ChatView`.
+    7. The cycle (4-6) repeats.
+- **UI/UX Considerations:** Focus on clarity and simplicity. A clean chat interface is paramount. Minimal navigation needed for MVP (essentially a single screen). No side panel required initially.
+</context>
+
+<PRD>
+# Technical Architecture (MVP)
+- **System Components:**
+    - Frontend: Flutter Mobile App.
+    - Backend: Python (e.g., FastAPI/Flask) API.
+- **Data Models:**
+    - `ChatMessage`: { sender: 'user' | 'ai' | 'analysis', text: string, timestamp: datetime } (Primarily in-memory).
+    - `ChatSession`: { context: string, messages: List[ChatMessage] } (In-memory on backend).
+- **APIs and Integrations:**
+    - Internal API: Endpoint (`/chat_message`) for frontend to send user messages and context, receiving AI response and analysis.
+    - External API: Google Gemini API (via Langchain).
+- **Infrastructure Requirements:**
+    - Simple cloud hosting for the backend API (e.g., Google Cloud Run, AWS Lambda, Heroku).
+    - Flutter build/deployment pipeline (e.g., Codemagic, manual).
+
+# Development Roadmap
+- **MVP Requirements (Phase 1):**
+    - Implement backend API endpoint (`/chat_message`).
+    - Setup Langchain with Gemini integration for basic response generation.
+    - Setup Langchain for basic counter-response analysis.
+    - Implement basic in-memory conversation history (Langchain Memory).
+    - Implement Flutter frontend: Context input field, chat view (message display), text input area.
+    - Connect frontend to backend API.
+    - Display AI response and analysis in the chat view.
+- **Future Enhancements (Post-MVP):**
+    - Voice Input & Speech-to-Text.
+    - Persistent Chat History & Histories Page.
+    - Advanced AI Analysis & Progress Report.
+    - Full Chat Lifecycle Options (Continue, End, etc.).
+    - Settings Page.
+    - User Accounts.
+    - UI Polish & Error Handling.
+    - Side Panel Navigation.
+
+# Logical Dependency Chain (MVP)
+1.  **Backend Setup:** Initialize backend project, setup API framework (FastAPI/Flask).
+2.  **Langchain/Gemini Core:** Integrate Langchain and Gemini for basic request/response. Implement simple in-memory storage. Define initial prompts for AI Coach role.
+3.  **Analysis Chain:** Develop the separate Langchain prompt/chain for basic analysis.
+4.  **API Endpoint:** Build the `/chat_message` endpoint integrating the response and analysis chains.
+5.  **Flutter UI Shell:** Create basic Flutter app structure, main chat screen layout (context input, chat display, text input).
+6.  **Frontend API Client:** Implement service in Flutter to call the backend API.
+7.  **Integration & Display:** Connect UI elements to the API client, display conversation and analysis.
+
+# Risks and Mitigations
+- **Technical Challenges:**
+    - *Risk:* Complexity in integrating Langchain effectively, especially managing state and multiple chains (response + analysis).
+    - *Mitigation:* Start with the simplest Langchain patterns. Allocate time for learning and experimentation. Refer to Langchain documentation and examples.
+    - *Risk:* Achieving meaningful AI analysis quality with basic prompts for MVP.
+    - *Mitigation:* Focus analysis on 1-2 simple metrics initially. Iterate on the analysis prompt based on testing. Accept that MVP analysis will be basic.
+- **Figuring out the MVP that we can build upon:**
+    - *Risk:* Scope creep, adding non-essential features to MVP.
+    - *Mitigation:* Strictly adhere to the defined MVP features. Regularly review progress against the MVP scope. Use this PRD as the source of truth.
+- **Resource Constraints:**
+    - *Risk:* Underestimating development time for AI integration or Flutter UI.
+    - *Mitigation:* Build features incrementally based on the dependency chain. Prioritize backend logic first. Keep UI very basic for MVP.
+
+# Appendix
+- [Links to relevant Langchain/Gemini documentation can be added here]
+- [Initial prompt ideas for AI Coach and Analysis can be drafted here]
+</PRD> 

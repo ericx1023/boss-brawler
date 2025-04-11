@@ -33,8 +33,11 @@ class ChatPage extends StatelessWidget {
     appBar: AppBar(title: const Text(App.title)),
     body: LlmChatView(
       provider: VertexProvider(
+        // For details and location availability, see
+        // https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/feature-support#non-streaming-text
         model: FirebaseVertexAI.instance.generativeModel(
-          model: 'gemini-2.0-flash',
+          model: 'gemini-2.5-pro-preview-03-25',
+          // Location might need to be configured differently or might use a default
         ),
       ),
     ),

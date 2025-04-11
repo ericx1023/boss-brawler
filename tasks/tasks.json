@@ -1,0 +1,391 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Setup Backend Project Structure",
+      "description": "Initialize the Python backend project with FastAPI/Flask, configure project structure, and setup basic API routing.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Create a new Python project with virtual environment. Install FastAPI/Flask and required dependencies. Setup project structure with routes, controllers, and services folders. Implement health check endpoint and basic error handling middleware. Configure CORS to allow requests from Flutter app.",
+      "testStrategy": "Verify server starts correctly. Test health check endpoint returns 200 OK. Ensure CORS headers are properly set for cross-origin requests."
+    },
+    {
+      "id": 2,
+      "title": "Integrate Langchain with Gemini API",
+      "description": "Implement core Langchain integration with Google Gemini API for basic request/response functionality.",
+      "status": "pending",
+      "dependencies": [
+        1
+      ],
+      "priority": "high",
+      "details": "Install Langchain and Google Gemini SDK. Create a service class for Gemini integration. Implement methods to initialize Gemini client with API key. Setup basic prompt templates for the AI Coach role. Create utility functions for sending prompts and processing responses. Implement simple error handling for API failures.",
+      "testStrategy": "Test connection to Gemini API with sample prompts. Verify responses are correctly formatted. Test error handling with invalid inputs and API failures.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Install and Setup Langchain and Google Gemini SDK",
+          "description": "Install the required packages and set up the project structure for Langchain and Google Gemini integration.",
+          "dependencies": [],
+          "details": "Implementation details:\n1. Create a virtual environment for the project\n2. Install langchain package using pip: `pip install langchain`\n3. Install Google Gemini SDK: `pip install google-generativeai`\n4. Install any additional dependencies like dotenv for environment variables: `pip install python-dotenv`\n5. Create a basic project structure with folders for services, utils, and config\n6. Create a .env file to store the Gemini API key securely\n7. Add the .env file to .gitignore to prevent committing secrets\n\nTesting approach:\n- Verify all packages install correctly without errors\n- Confirm imports work in a test script\n- Ensure environment variables can be loaded correctly",
+          "status": "pending",
+          "parentTaskId": 2
+        },
+        {
+          "id": 2,
+          "title": "Create Gemini Client Configuration Service",
+          "description": "Implement a service class to initialize and configure the Gemini API client with proper authentication.",
+          "dependencies": [
+            1
+          ],
+          "details": "Implementation details:\n1. Create a `GeminiService` class in the services directory\n2. Implement a method to load the API key from environment variables\n3. Create an initialization method that configures the Gemini client with the API key\n4. Add configuration options for model selection (e.g., gemini-pro)\n5. Implement client validation to ensure the API key is valid\n6. Create a singleton pattern to reuse the client throughout the application\n7. Add logging for connection events\n\nTesting approach:\n- Create unit tests to verify client initialization with mock API keys\n- Test error handling when API key is missing or invalid\n- Verify the singleton pattern works correctly across multiple imports",
+          "status": "pending",
+          "parentTaskId": 2
+        },
+        {
+          "id": 3,
+          "title": "Implement Prompt Templates for AI Coach Role",
+          "description": "Create structured prompt templates using Langchain for the AI Coach functionality.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implementation details:\n1. Create a `PromptTemplates` class or module\n2. Define base template for the AI Coach role with system instructions\n3. Implement specialized templates for different coaching scenarios (e.g., goal setting, feedback)\n4. Use Langchain's PromptTemplate class to create structured templates with variables\n5. Create a method to format templates with user inputs\n6. Implement template validation to ensure all required variables are provided\n7. Add documentation for each template explaining its purpose and required inputs\n\nTesting approach:\n- Test template formatting with various inputs\n- Verify error handling for missing template variables\n- Create test cases for each specialized template\n- Ensure templates generate appropriate prompts for the AI Coach role",
+          "status": "pending",
+          "parentTaskId": 2
+        },
+        {
+          "id": 4,
+          "title": "Create Utility Functions for Sending Prompts and Processing Responses",
+          "description": "Develop utility functions to handle sending prompts to the Gemini API and processing the responses.",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "Implementation details:\n1. Create a `GeminiProcessor` class that handles communication with the API\n2. Implement a method to send formatted prompts to the Gemini API\n3. Create functions to parse and structure the API responses\n4. Add response validation to ensure expected format\n5. Implement response caching for efficiency\n6. Create utility functions to extract specific information from responses\n7. Add methods to handle streaming responses if needed\n8. Implement response formatting for different output types (text, JSON, etc.)\n\nTesting approach:\n- Create unit tests with mock API responses\n- Test response parsing with various response formats\n- Verify caching mechanisms work correctly\n- Test extraction functions with sample responses",
+          "status": "pending",
+          "parentTaskId": 2
+        },
+        {
+          "id": 5,
+          "title": "Implement Error Handling and Reliability Features",
+          "description": "Add comprehensive error handling, retries, and reliability features for the Gemini API integration.",
+          "dependencies": [
+            2,
+            4
+          ],
+          "details": "Implementation details:\n1. Create an error handling module for API-specific errors\n2. Implement retry logic for transient failures (network issues, rate limits)\n3. Add exponential backoff for retries\n4. Create custom exception classes for different error types\n5. Implement graceful fallbacks for when the API is unavailable\n6. Add detailed logging for all API interactions and errors\n7. Create a monitoring system to track API usage and errors\n8. Implement timeout handling for long-running requests\n\nTesting approach:\n- Test retry logic by simulating network failures\n- Verify exponential backoff works correctly\n- Test custom exceptions are raised appropriately\n- Create integration tests for the complete request/response cycle\n- Test timeout handling with delayed responses",
+          "status": "pending",
+          "parentTaskId": 2
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Implement In-Memory Conversation Storage",
+      "description": "Create a simple in-memory storage mechanism to maintain conversation history during a chat session.",
+      "status": "pending",
+      "dependencies": [
+        1
+      ],
+      "priority": "high",
+      "details": "Implement ChatMessage and ChatSession data models as defined in the PRD. Create a SessionManager service to handle creation and retrieval of chat sessions. Use Langchain's Memory modules for maintaining conversation context. Implement methods to add new messages to a session and retrieve full conversation history.",
+      "testStrategy": "Test creating new sessions with context. Verify messages can be added to sessions. Test retrieving conversation history. Ensure session state is maintained correctly between requests."
+    },
+    {
+      "id": 4,
+      "title": "Develop AI Analysis Chain",
+      "description": "Create a separate Langchain chain for analyzing user's negotiation responses and providing feedback.",
+      "status": "pending",
+      "dependencies": [
+        2,
+        3
+      ],
+      "priority": "medium",
+      "details": "Design prompt templates for the analysis chain focusing on 1-2 simple metrics (clarity, assertiveness). Implement a separate Langchain chain that takes the conversation context and user's latest message as input. Configure the chain to generate concise, actionable feedback. Ensure the analysis output is clearly differentiated from regular AI responses.",
+      "testStrategy": "Test analysis chain with various user messages. Verify feedback is relevant to negotiation skills. Check that analysis is concise and actionable. Test with edge cases like very short or unclear user messages.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Design Analysis Prompt Templates",
+          "description": "Create specialized prompt templates for evaluating clarity and assertiveness in user negotiations",
+          "dependencies": [],
+          "details": "Implementation steps:\n1. Research effective metrics for evaluating clarity in negotiations (conciseness, use of specific terms, logical structure)\n2. Research metrics for assertiveness evaluation (confidence markers, direct requests, boundary setting)\n3. Create a detailed prompt template that instructs the AI to analyze these specific metrics\n4. Include clear rating scales (e.g., 1-5) for each metric with descriptions of what each level means\n5. Add examples of responses at different rating levels to calibrate the AI's evaluations\n6. Include instructions for providing actionable feedback based on the ratings\n\nTesting approach:\n- Test the prompt with sample negotiation responses of varying quality\n- Verify that feedback is consistent, specific, and actionable\n- Ensure the prompt produces concise evaluations that can be presented to users",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 2,
+          "title": "Implement Metric Evaluation Logic",
+          "description": "Develop the core logic for evaluating clarity and assertiveness in user messages",
+          "dependencies": [
+            1
+          ],
+          "details": "Implementation steps:\n1. Create a function to extract key elements from user messages that indicate clarity (sentence structure, specificity, organization)\n2. Develop logic to identify assertiveness markers (direct language, requests, confidence indicators)\n3. Implement scoring algorithms for each metric based on the prompt guidelines\n4. Create a structured output format that includes:\n   - Numerical scores for each metric\n   - Key strengths identified in the response\n   - Areas for improvement\n   - Specific suggestions for enhancement\n5. Add validation to ensure scores are within defined ranges\n\nTesting approach:\n- Unit test the evaluation functions with diverse input examples\n- Verify score consistency across similar messages\n- Test edge cases (very short responses, unclear messages, highly assertive language)",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 3,
+          "title": "Build Analysis Chain Architecture",
+          "description": "Construct the Langchain components for the analysis functionality",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "Implementation steps:\n1. Import necessary Langchain components (LLMChain, PromptTemplate)\n2. Initialize the analysis chain with the designed prompt templates\n3. Configure the chain to accept two key inputs:\n   - Full conversation context (for understanding the negotiation flow)\n   - User's latest message (for focused analysis)\n4. Set up appropriate LLM parameters (temperature, max tokens) for consistent analysis\n5. Create a wrapper function that handles pre-processing of inputs and post-processing of outputs\n6. Implement error handling for cases where analysis cannot be completed\n\nTesting approach:\n- Test the chain with various conversation contexts and user messages\n- Verify that the chain correctly processes both inputs\n- Ensure the output format matches the expected structure\n- Test error handling by providing invalid inputs",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 4,
+          "title": "Format Analysis Output for User Presentation",
+          "description": "Design and implement the formatting of analysis results to make them clear and actionable for users",
+          "dependencies": [
+            3
+          ],
+          "details": "Implementation steps:\n1. Create a distinct visual style for analysis feedback (different from regular chat responses)\n2. Implement a formatter that structures the feedback into sections:\n   - Overall assessment summary (1-2 sentences)\n   - Clarity score with explanation\n   - Assertiveness score with explanation\n   - Actionable suggestions (2-3 bullet points)\n3. Add visual indicators for scores (e.g., progress bars, star ratings)\n4. Ensure the format is concise and scannable\n5. Implement conditional formatting based on score levels (highlight areas needing improvement)\n\nTesting approach:\n- Test the formatter with various analysis outputs\n- Verify that the formatting is consistent across different feedback types\n- Ensure the output is visually distinct from regular conversation\n- Test readability and scannability with different output lengths",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 5,
+          "title": "Integrate Analysis Chain with Main Conversation Flow",
+          "description": "Connect the analysis chain to the main conversation system to provide feedback at appropriate moments",
+          "dependencies": [
+            3,
+            4
+          ],
+          "details": "Implementation steps:\n1. Create an integration function that determines when to trigger the analysis chain\n2. Implement logic to decide appropriate moments for feedback (e.g., after user makes a significant negotiation point)\n3. Add a mechanism for users to explicitly request feedback on their latest message\n4. Ensure the analysis results are properly inserted into the conversation flow\n5. Add state management to track when feedback was last provided\n6. Implement a toggle for users to enable/disable automatic analysis\n\nTesting approach:\n- Test the integration in complete conversation flows\n- Verify that analysis is triggered at appropriate moments\n- Test the explicit feedback request functionality\n- Ensure the conversation flow remains natural when analysis is inserted\n- Test enabling/disabling the analysis feature",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 6,
+          "title": "Define Negotiation Analysis Metrics and Evaluation Criteria",
+          "description": "Define specific metrics for analyzing negotiation responses, focusing on clarity and assertiveness. Create detailed evaluation criteria for each metric that the AI can use to provide meaningful feedback.",
+          "dependencies": [],
+          "details": "1. Research and define clear parameters for measuring 'clarity' in negotiation responses (e.g., conciseness, specific asks, logical structure).\n2. Research and define parameters for measuring 'assertiveness' (e.g., confidence, boundary setting, value articulation).\n3. Create a scoring rubric for each metric (e.g., 1-5 scale with specific criteria for each level).\n4. Develop examples of responses at different levels for each metric to calibrate the analysis.\n5. Document these metrics and evaluation criteria in a structured format that can be referenced in prompts.\n6. Test the criteria with sample negotiation responses to ensure they provide meaningful differentiation.\n7. Testing approach: Manually review outputs against predefined test cases to ensure metrics capture the intended aspects of negotiation responses.",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 7,
+          "title": "Design Analysis Chain Prompt Templates",
+          "description": "Create prompt templates that instruct the LLM to analyze negotiation responses based on the defined metrics. These templates should guide the model to provide consistent, structured feedback.",
+          "dependencies": [
+            6
+          ],
+          "details": "1. Create a system prompt template that explains the analysis task and provides the evaluation criteria for clarity and assertiveness.\n2. Design a user message template that formats the conversation context and latest user message for analysis.\n3. Create an output format template that structures how feedback should be presented (e.g., scores, strengths, improvement areas).\n4. Include specific instructions in the prompt to ensure the model provides concrete, actionable feedback rather than vague observations.\n5. Add examples of well-analyzed responses in the prompt to demonstrate the expected analysis depth and format.\n6. Include safeguards to prevent the analysis chain from continuing the conversation instead of providing feedback.\n7. Testing approach: Test prompts with various negotiation scenarios to ensure consistent, helpful analysis across different contexts and response types.",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 8,
+          "title": "Implement Langchain Analysis Chain",
+          "description": "Build the Langchain component that processes user responses through the analysis templates and generates structured feedback using the LLM.",
+          "dependencies": [
+            7
+          ],
+          "details": "1. Import necessary Langchain components (e.g., LLMChain, PromptTemplate, ChatOpenAI).\n2. Initialize the language model with appropriate temperature settings for analytical tasks (lower temperature for more consistent analysis).\n3. Implement the prompt templates created in the previous subtask as Langchain PromptTemplates.\n4. Configure the Langchain to process conversation history and the latest user message.\n5. Create a function that extracts relevant context from the conversation history for analysis.\n6. Build the complete chain that connects these components to process input and generate feedback.\n7. Implement error handling for cases where analysis might fail.\n8. Testing approach: Unit test the chain with mock inputs to verify it correctly processes inputs and generates structured feedback.",
+          "status": "pending",
+          "parentTaskId": 4
+        },
+        {
+          "id": 9,
+          "title": "Integrate Analysis Chain and Format Output",
+          "description": "Integrate the analysis chain with the main application flow and implement formatting to clearly differentiate feedback from regular conversation responses.",
+          "dependencies": [
+            8
+          ],
+          "details": "1. Create an interface function that applications can call to analyze negotiation responses.\n2. Implement visual/formatting distinctions for analysis feedback (e.g., different color, styling, or prefixes).\n3. Add a toggle mechanism to enable/disable analysis feedback based on user preferences.\n4. Implement caching to avoid redundant analysis of the same message.\n5. Create a feedback presentation component that displays the analysis results in a user-friendly format.\n6. Add functionality to track improvement over time by storing analysis results.\n7. Document the integration points and usage examples for developers.\n8. Testing approach: Integration testing to ensure the analysis chain works correctly with the main application flow, and that feedback is properly formatted and displayed to users.",
+          "status": "pending",
+          "parentTaskId": 4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Build /chat_message API Endpoint",
+      "description": "Implement the primary API endpoint that handles user messages and returns AI responses with analysis.",
+      "status": "pending",
+      "dependencies": [
+        2,
+        3,
+        4
+      ],
+      "priority": "high",
+      "details": "Create POST endpoint at /chat_message that accepts context (for new sessions) and user message. Implement request validation for required fields. Connect endpoint to session manager to maintain conversation history. Integrate response chain and analysis chain, executing them sequentially. Format response to include both AI reply and analysis. Add appropriate error handling and logging.",
+      "testStrategy": "Test endpoint with valid requests and verify correct responses. Test session creation with new context. Test conversation continuation with existing sessions. Verify error responses for invalid inputs. Test performance with longer conversations.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create basic /chat_message POST endpoint structure",
+          "description": "Set up the foundational structure for the /chat_message endpoint, including route definition, basic request handling, and skeleton response.",
+          "dependencies": [],
+          "details": "1. Create a new route handler for POST /chat_message\n2. Define the request body interface with 'context' and 'message' fields\n3. Set up a basic response structure that will eventually include AI reply and analysis\n4. Implement basic endpoint logging (request received, response sent)\n5. Add initial error handling structure with try/catch blocks\n6. Test the endpoint with Postman or curl to ensure it accepts requests and returns a placeholder response",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 2,
+          "title": "Implement request validation for /chat_message endpoint",
+          "description": "Add comprehensive validation for incoming requests to ensure all required fields are present and properly formatted.",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Create validation schema for the request body (using a library like Joi, Zod, or similar)\n2. Validate that 'message' field is present and is a non-empty string\n3. Validate 'context' field structure when provided for new sessions\n4. Implement proper HTTP 400 error responses for validation failures with descriptive error messages\n5. Add validation for session ID if continuing an existing conversation\n6. Test the validation with various invalid request formats to ensure proper error handling",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 3,
+          "title": "Integrate session management with the /chat_message endpoint",
+          "description": "Connect the endpoint to the session manager to maintain conversation history across requests.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Import and initialize the session manager in the endpoint handler\n2. Create logic to either create a new session (if no session ID provided) or retrieve an existing session\n3. Add the user message to the conversation history in the session\n4. Implement session timeout/expiration handling\n5. Ensure session state is properly saved after processing\n6. Add session-related error handling (e.g., session not found, session expired)\n7. Test session creation, retrieval, and conversation history maintenance across multiple requests",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 4,
+          "title": "Implement chain execution in the /chat_message endpoint",
+          "description": "Integrate and sequentially execute the response chain and analysis chain to process user messages.",
+          "dependencies": [
+            3
+          ],
+          "details": "1. Import response chain and analysis chain modules\n2. Set up the response chain execution with the user message and conversation history from the session\n3. Capture the AI response from the response chain\n4. Pass the AI response to the analysis chain\n5. Capture the analysis results\n6. Implement error handling for chain execution failures\n7. Add appropriate logging for chain execution steps\n8. Test the chains execute correctly and produce expected outputs",
+          "status": "pending",
+          "parentTaskId": 5
+        },
+        {
+          "id": 5,
+          "title": "Format response and implement comprehensive error handling",
+          "description": "Structure the API response to include both AI reply and analysis, and add robust error handling throughout the endpoint.",
+          "dependencies": [
+            4
+          ],
+          "details": "1. Create a standardized response format that includes AI response text, analysis results, and session information\n2. Implement HTTP status code selection based on different error conditions\n3. Add detailed error logging with appropriate severity levels\n4. Implement graceful degradation (e.g., return partial results if only one chain fails)\n5. Add performance metrics logging (response time, chain execution time)\n6. Sanitize any sensitive information from error messages and logs\n7. Test the endpoint with various edge cases and error conditions\n8. Document the API response format for frontend developers",
+          "status": "pending",
+          "parentTaskId": 5
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Setup Flutter Project Structure",
+      "description": "Initialize the Flutter mobile application project with basic structure and navigation.",
+      "status": "pending",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Create new Flutter project. Configure project structure with screens, widgets, models, and services folders. Setup basic theme and styling. Implement main app scaffold with minimal navigation (single screen for MVP). Install required dependencies for HTTP requests and state management.",
+      "testStrategy": "Verify app builds and runs on both Android and iOS. Test basic navigation and screen rendering. Ensure project structure follows best practices."
+    },
+    {
+      "id": 7,
+      "title": "Implement Flutter UI Components",
+      "description": "Develop the core UI components for the chat interface including context input, message display, and text input.",
+      "status": "pending",
+      "dependencies": [
+        6
+      ],
+      "priority": "medium",
+      "details": "Create ContextInputField widget for entering negotiation scenario. Implement ChatView widget to display conversation messages with different styles for user, AI, and analysis messages. Develop MessageInputArea widget with text field and send button. Ensure UI is responsive and adapts to different screen sizes. Implement basic loading indicators for API requests.",
+      "testStrategy": "Test UI rendering on different device sizes. Verify input fields accept and validate text correctly. Test scrolling behavior in chat view with many messages. Ensure keyboard handling works properly."
+    },
+    {
+      "id": 8,
+      "title": "Create Frontend API Client",
+      "description": "Implement a service in Flutter to communicate with the backend API endpoints.",
+      "status": "pending",
+      "dependencies": [
+        6
+      ],
+      "priority": "medium",
+      "details": "Create ApiService class to handle HTTP requests to backend. Implement methods for sending messages and context to /chat_message endpoint. Add error handling for network issues and API errors. Create data models matching backend (ChatMessage, ChatSession). Implement serialization/deserialization of API requests and responses.",
+      "testStrategy": "Test API client with mock responses. Verify correct handling of successful responses and errors. Test timeout handling and retry logic. Ensure data models correctly parse API responses."
+    },
+    {
+      "id": 9,
+      "title": "Implement Chat State Management",
+      "description": "Create state management solution to handle the chat session state in the Flutter app.",
+      "status": "pending",
+      "dependencies": [
+        7,
+        8
+      ],
+      "priority": "medium",
+      "details": "Implement ChatController or state management class to maintain current conversation state. Create methods to add new messages, send messages to API, and update UI. Implement loading states for pending API requests. Handle displaying AI responses and analysis in the chat view. Manage context input visibility based on session state.",
+      "testStrategy": "Test state updates when sending messages. Verify UI updates correctly when new messages arrive. Test error handling and recovery. Ensure state is maintained consistently throughout the chat flow.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create ChatController class with basic state structure",
+          "description": "Implement the core ChatController class with state management capabilities to maintain the chat session state",
+          "dependencies": [],
+          "details": "1. Create a new ChatController class that will use a state management approach (e.g., Provider, Bloc, or GetX)\n2. Define the core state properties: messages list, loading status, error state, and context input visibility flag\n3. Implement basic state initialization and reset functionality\n4. Create a message model class with fields for content, timestamp, sender (user/AI), and message status\n5. Add methods to get the current state and listen to state changes\n6. Test the controller initialization and basic state management with unit tests",
+          "status": "pending",
+          "parentTaskId": 9
+        },
+        {
+          "id": 2,
+          "title": "Implement message handling and management methods",
+          "description": "Add methods to the ChatController for adding, updating, and managing messages in the conversation",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Implement addMessage() method to add new user messages to the state\n2. Create updateMessage() method to modify existing messages (e.g., when API responses arrive)\n3. Add message validation logic to prevent empty messages\n4. Implement methods to clear conversation history or remove specific messages\n5. Add functionality to track and manage message status (sending, sent, failed, etc.)\n6. Create methods to handle typing indicators and message timestamps\n7. Test message addition, updating, and management with unit tests to verify correct state transitions",
+          "status": "pending",
+          "parentTaskId": 9
+        },
+        {
+          "id": 3,
+          "title": "Integrate API communication for sending and receiving messages",
+          "description": "Add API integration to the ChatController to handle sending messages and processing responses",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Create methods to prepare and send messages to the API endpoint\n2. Implement loading state management during API requests\n3. Add error handling for API communication failures\n4. Process API responses and update the message state accordingly\n5. Implement retry logic for failed message sends\n6. Create methods to handle AI analysis responses and special message types\n7. Add rate limiting or throttling if needed\n8. Test API integration with mock HTTP client to verify correct handling of success and error scenarios",
+          "status": "pending",
+          "parentTaskId": 9
+        },
+        {
+          "id": 4,
+          "title": "Implement UI state coordination and context visibility management",
+          "description": "Add methods to coordinate UI updates based on chat state and manage context input visibility",
+          "dependencies": [
+            1,
+            2,
+            3
+          ],
+          "details": "1. Create methods to notify UI of state changes for efficient rebuilds\n2. Implement logic to manage context input visibility based on session state\n3. Add functionality to scroll to latest messages automatically\n4. Create methods to handle UI-specific states like scrolling position and focus management\n5. Implement methods to track and display typing indicators\n6. Add support for UI theming based on message sender\n7. Create integration tests to verify correct UI updates in response to state changes\n8. Implement methods to handle different view states (empty chat, loading, error, active conversation)",
+          "status": "pending",
+          "parentTaskId": 9
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Integrate and Test Complete Chat Flow",
+      "description": "Connect all components to implement the complete chat flow and perform end-to-end testing.",
+      "status": "pending",
+      "dependencies": [
+        5,
+        9
+      ],
+      "priority": "high",
+      "details": "Connect Flutter UI components with state management and API client. Implement the full user flow from context input to message exchange with AI. Add final error handling and loading states. Perform comprehensive testing of the entire application flow. Optimize performance and fix any integration issues.",
+      "testStrategy": "Perform end-to-end testing of the complete user flow. Test with various negotiation scenarios and message types. Verify AI responses and analysis display correctly. Test error recovery and edge cases. Conduct usability testing with sample users if possible."
+    }
+  ],
+  "metadata": {
+    "projectName": "Boss Brawler - Negotiation Practice App",
+    "totalTasks": 10,
+    "sourceFile": "prd.txt",
+    "generatedAt": "2023-12-15"
+  }
+}

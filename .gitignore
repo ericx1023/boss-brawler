@@ -40,3 +40,5 @@ example/lib/echo.dart
 
 example/lib/gemini_api_key.dart
 example/lib/firebase_options.dart
+
+.env

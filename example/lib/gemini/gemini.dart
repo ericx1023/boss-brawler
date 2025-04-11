@@ -11,7 +11,7 @@ import '../gemini_api_key.dart';
 void main() => runApp(const App());
 
 class App extends StatelessWidget {
-  static const title = 'Example: Google Gemini AI';
+  static const title = 'Boss Brawler';
 
   const App({super.key});
 

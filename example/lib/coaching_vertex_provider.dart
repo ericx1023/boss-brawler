@@ -8,11 +8,12 @@ import 'package:retry/retry.dart'; // Import retry package
 import 'dart:developer' as developer; // Import developer for logging
 
 import 'prompt_manager.dart';
+import 'vertex_ai_model_adapter.dart'; // Import the adapter
 
 /// An AiProvider that uses a PromptManager to format prompts for a Vertex AI model,
 /// specifically designed for the AI coaching scenario.
 class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
-  final GenerativeModel model;
+  final VertexAiModelAdapter modelAdapter; // Use the adapter interface
   final PromptManager promptManager;
   bool _isGenerating = false;
   final List<ChatMessage> _history = [];
@@ -24,7 +25,10 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
     maxDelay: Duration(seconds: 2), // Max delay of 2 seconds
   );
 
-  CoachingVertexProvider({required this.model, required this.promptManager});
+  CoachingVertexProvider({
+    required this.modelAdapter, // Inject the adapter
+    required this.promptManager
+  });
 
   @override
   Stream<String> sendMessageStream(
@@ -49,7 +53,7 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
 
       // Use retry mechanism for the API call
       final responseStream = await _retryOptions.retry<Stream<GenerateContentResponse>>(
-        () => model.generateContentStream(content),
+        () => modelAdapter.generateContentStream(content),
         retryIf: (e) => _shouldRetry(e), // Define which errors should trigger a retry
         onRetry: (e) => developer.log('Retrying API call after error: $e', name: 'CoachingVertexProvider'),
       );
@@ -164,7 +168,7 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
 
         // Use retry mechanism
         final responseStream = await _retryOptions.retry<Stream<GenerateContentResponse>>(
-          () => model.generateContentStream(content),
+          () => modelAdapter.generateContentStream(content),
           retryIf: (e) => _shouldRetry(e),
           onRetry: (e) => developer.log('Retrying generateStream API call after error: $e', name: 'CoachingVertexProvider'),
         );

@@ -36,5 +36,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/
     - assets/recipes_default.json
     - assets/halloween-bg.png

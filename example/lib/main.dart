@@ -8,6 +8,10 @@ import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+// Import the screens
+import 'screens/home_screen.dart';
+import 'screens/chat_page.dart';
+
 import '../gemini_api_key.dart';
 
 // Make main async and initialize Firebase
@@ -20,25 +24,18 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-  static const title = 'Boss Brawler';
+  static const title = 'Negotiation Page';
 
   const App({super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      const MaterialApp(title: title, home: ChatPage());
-}
-
-class ChatPage extends StatelessWidget {
-  const ChatPage({super.key});
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text(App.title)),
-    body: LlmChatView(
-      provider: GeminiProvider(
-        model: GenerativeModel(model: 'gemini-2.0-flash', apiKey: geminiApiKey),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) => MaterialApp(
+        title: title,
+        // Define the routes
+        initialRoute: '/home',
+        routes: {
+          '/home': (context) => const HomeScreen(),
+          '/chat': (context) => const ChatPage(),
+        },
+      );
 }

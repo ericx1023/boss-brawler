@@ -1,6 +1,11 @@
+import 'dart:async'; // Import async for Timer
+
+import 'package:firebase_core/firebase_core.dart'; // Import for FirebaseException
 import 'package:firebase_vertexai/firebase_vertexai.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:flutter/foundation.dart';
+import 'package:retry/retry.dart'; // Import retry package
+import 'dart:developer' as developer; // Import developer for logging
 
 import 'prompt_manager.dart';
 
@@ -12,75 +17,129 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
   bool _isGenerating = false;
   final List<ChatMessage> _history = [];
 
+  // Configure retry options
+  final _retryOptions = const RetryOptions(
+    maxAttempts: 3, // Try 3 times before failing
+    delayFactor: Duration(milliseconds: 200), // Wait 200ms, 400ms, 800ms
+    maxDelay: Duration(seconds: 2), // Max delay of 2 seconds
+  );
+
   CoachingVertexProvider({required this.model, required this.promptManager});
 
   @override
   Stream<String> sendMessageStream(
     String prompt, {
     Iterable<Attachment> attachments = const [],
-  }) async* { // Match LlmProvider signature
+  }) async* {
     _isGenerating = true;
     notifyListeners();
 
-    // Create user message and add to history
     final userMessage = ChatMessage(origin: MessageOrigin.user, text: prompt, attachments: attachments);
     _history.add(userMessage);
-    // Don't notify yet, wait for LLM response addition
+    // Notify after adding potential error message or success message
+
+    // Reference to potentially add error message later
+    ChatMessage? errorMessage;
 
     try {
-      // Format the prompt using the coach template (using the direct prompt)
-      // TODO: Enhance prompt formatting to include relevant history if needed
-      // final formattedPrompt = promptManager.getCoachPrompt(prompt);
+      // TODO: Enhance prompt formatting (remains unchanged)
+      // ... (existing prompt formatting logic) ...
 
-      // if (formattedPrompt == null) {
-      //   yield 'Error: Could not format prompt.';
-      //   // Decide if an error message should be added to history here or handled differently
-      //   _isGenerating = false;
-      //   notifyListeners(); // Notify state change even on format error
-      //   return;
-      // }
+      final content = [Content.text(prompt)];
 
-      // Prepare content for the model - System prompt is handled by model initialization
-      final content = [
-          // Add history if needed:
-          // ...history?.map((msg) => msg.toContent()).toList() ?? [],
-          Content.text(prompt) // Only send the user's current message
-        ]; // Or Content('user', [TextPart(formattedPrompt), ...attachments.map(...)]) if attachments needed here
-
-      // Call the Vertex AI model and stream the response
-      final responseStream = model.generateContentStream(content);
+      // Use retry mechanism for the API call
+      final responseStream = await _retryOptions.retry<Stream<GenerateContentResponse>>(
+        () => model.generateContentStream(content),
+        retryIf: (e) => _shouldRetry(e), // Define which errors should trigger a retry
+        onRetry: (e) => developer.log('Retrying API call after error: $e', name: 'CoachingVertexProvider'),
+      );
 
       String fullResponse = '';
       await for (final chunk in responseStream) {
+        // Check for safety ratings or other non-text parts if needed
+        // final safety = chunk.candidates.first.safetyRatings;
+        // if (safety != null && safety.any((r) => r.probability != HarmProbability.negligible)) {
+        //   developer.log('Content blocked due to safety ratings: ${safety.map((r) => '${r.category}: ${r.probability}')}', name: 'CoachingVertexProvider');
+        //   yield 'Error: Content blocked due to safety concerns.';
+        //   errorMessage = ChatMessage(origin: MessageOrigin.llm, text: 'Error: Content blocked due to safety concerns.', attachments: []); // Use llm, add attachments
+        //   // Stop processing this response stream
+        //   return;
+        // }
+
         final text = chunk.text;
         if (text != null) {
           fullResponse += text;
           yield text;
+        } else {
+           developer.log('Received chunk with no text: ${chunk.candidates.firstOrNull?.finishReason}', name: 'CoachingVertexProvider');
+           // Handle potential finish reasons if necessary
         }
       }
 
-      // Create LLM response message and add to history
-      final llmMessage = ChatMessage(origin: MessageOrigin.llm, text: fullResponse, attachments: []);
-      _history.add(llmMessage);
-      notifyListeners(); // Notify history and state change after LLM response
+       if (fullResponse.isEmpty && errorMessage == null) { // Check if errorMessage already set (e.g., by safety block)
+         // Handle cases where the stream completed but yielded no text
+         developer.log('API call succeeded but returned empty response.', name: 'CoachingVertexProvider');
+         const emptyResponseError = 'AI returned an empty response.';
+         errorMessage = ChatMessage(origin: MessageOrigin.llm, text: emptyResponseError, attachments: []); // Use llm, add attachments
+         yield 'Error: $emptyResponseError';
+       } else if (errorMessage == null) { // Only add successful LLM response if no error occurred
+         final llmMessage = ChatMessage(origin: MessageOrigin.llm, text: fullResponse, attachments: []);
+         _history.add(llmMessage);
+       }
 
-    } catch (e) {
-      print('Error calling Vertex AI: $e');
-      yield 'Error: Could not get response from AI.';
-      // No system message added to history
+
+    } on FirebaseException catch (e) {
+      developer.log('FirebaseException calling Vertex AI: ${e.code} - ${e.message}', name: 'CoachingVertexProvider', error: e, stackTrace: e.stackTrace);
+      final userFacingError = _mapFirebaseError(e);
+      errorMessage = ChatMessage(origin: MessageOrigin.llm, text: userFacingError, attachments: []); // Use llm, add attachments
+      yield userFacingError;
+    } catch (e, stackTrace) {
+      developer.log('Generic error calling Vertex AI: $e', name: 'CoachingVertexProvider', error: e, stackTrace: stackTrace);
+      const userFacingError = 'An unexpected error occurred while contacting the AI.';
+      errorMessage = ChatMessage(origin: MessageOrigin.llm, text: userFacingError, attachments: []); // Use llm, add attachments
+      yield userFacingError;
     } finally {
       _isGenerating = false;
-      // Notify state change, history notification happened in try block on success
-      if (hasListeners) { // Check if listeners exist before notifying
-           notifyListeners();
+      if (errorMessage != null) {
+        _history.add(errorMessage); // Add the error message to history
       }
+      notifyListeners(); // Notify state and history changes
+    }
+  }
+
+  // Helper function to determine if an error should be retried
+  bool _shouldRetry(Exception e) {
+    if (e is FirebaseException) {
+      // Example: Retry on transient network errors or rate limits
+      // Adjust codes based on actual Vertex AI/Firebase error codes
+      return e.code == 'unavailable' || e.code == 'resource-exhausted' || e.code == 'internal';
+    }
+    // Optionally retry on other transient error types like TimeoutException
+    if (e is TimeoutException) {
+      return true;
+    }
+    return false; // Default to not retrying unknown errors
+  }
+
+  // Helper function to map Firebase errors to user-friendly messages
+  String _mapFirebaseError(FirebaseException e) {
+    switch (e.code) {
+      case 'unavailable':
+        return 'The AI service is temporarily unavailable. Please try again later.';
+      case 'resource-exhausted':
+        return 'The AI service is currently busy. Please try again shortly.';
+      case 'permission-denied':
+        return 'Error: Permission denied. Check API key or configuration.';
+      case 'invalid-argument':
+         return 'Error: Invalid request sent to AI. Check prompt content.';
+      // Add more specific mappings as needed
+      default:
+        return 'An error occurred while communicating with the AI (${e.code}).';
     }
   }
 
   @override
   bool get isGenerating => _isGenerating;
-
-  // Removed the non-interface sendMessage method
 
   @override
   Iterable<ChatMessage> get history => _history;
@@ -96,36 +155,45 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
   Stream<String> generateStream(
       String prompt, {
       Iterable<Attachment> attachments = const [],
-  }) async* { // Match LlmProvider signature
+  }) async* {
      // This stream does not interact with history
+     // Implement similar retry and error handling as sendMessageStream
      try {
-        // Format prompt (without history context)
-        // final formattedPrompt = promptManager.getCoachPrompt(prompt);
+        // TODO: Prompt formatting if needed
+        final content = [Content.text(prompt)]; // Assuming generateStream doesn't use attachments here
 
-        // if (formattedPrompt == null) {
-        //   yield 'Error: Could not format prompt.';
-        //   return;
-        // }
+        // Use retry mechanism
+        final responseStream = await _retryOptions.retry<Stream<GenerateContentResponse>>(
+          () => model.generateContentStream(content),
+          retryIf: (e) => _shouldRetry(e),
+          onRetry: (e) => developer.log('Retrying generateStream API call after error: $e', name: 'CoachingVertexProvider'),
+        );
 
-        // Prepare content - consider if attachments are needed for generateStream
-        final content = [
-            // Add history if needed:
-            // ...history?.map((msg) => msg.toContent()).toList() ?? [],
-            Content.text(prompt) // Only send the user's current message
-          ]; // Or include attachments if needed
-
-        final responseStream = model.generateContentStream(content);
-
+        bool yieldedData = false;
         await for (final chunk in responseStream) {
+           // Add safety check similar to sendMessageStream if needed
            final text = chunk.text;
            if (text != null) {
+              yieldedData = true;
               yield text;
+           } else {
+              developer.log('generateStream received chunk with no text: ${chunk.candidates.firstOrNull?.finishReason}', name: 'CoachingVertexProvider');
            }
         }
-     } catch (e) {
-        print('Error in generateStream: $e');
-        yield 'Error: Could not generate response.';
+
+        if (!yieldedData) {
+          developer.log('generateStream succeeded but returned empty response.', name: 'CoachingVertexProvider');
+          yield 'Error: AI returned an empty response.'; // Yield error string
+        }
+
+     } on FirebaseException catch (e) {
+       developer.log('FirebaseException in generateStream: ${e.code} - ${e.message}', name: 'CoachingVertexProvider', error: e, stackTrace: e.stackTrace);
+       yield _mapFirebaseError(e); // Return user-friendly error string
+     } catch (e, stackTrace) {
+       developer.log('Generic error in generateStream: $e', name: 'CoachingVertexProvider', error: e, stackTrace: stackTrace);
+       yield 'An unexpected error occurred.'; // Generic fallback string
      }
+     // No finally block needed here as it doesn't manage _isGenerating or history
   }
 
   // dispose, addListener, removeListener, hasListeners are inherited from ChangeNotifier

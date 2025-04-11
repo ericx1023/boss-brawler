@@ -1,92 +1,91 @@
 # Task ID: 2
-# Title: Integrate Vertex AI Gemini API
-# Status: in-progress
+# Title: Integrate Vertex AI Gemini API in Flutter App
+# Status: in_progress
 # Dependencies: 1
 # Priority: high
-# Description: Set up Vertex AI Gemini API integration within Cloud Functions for chat functionality
+# Description: Set up Vertex AI Gemini API integration within the Flutter application for chat functionality using firebase_vertexai SDK.
 # Details:
-1. Set up Google Cloud project authentication
-2. Install Vertex AI SDK in Cloud Functions environment
-3. Create API client initialization function
-4. Implement prompt template management for the AI coach role
-5. Create functions to handle requests to Vertex AI and process responses
-6. Implement error handling with appropriate retries and fallbacks
-7. Create a test endpoint to verify AI integration
+1. Set up Firebase project and Flutter environment for Vertex AI.
+2. Install necessary Flutter packages (firebase_core, firebase_vertexai, flutter_ai_toolkit).
+3. Initialize Vertex AI client (GenerativeModel) within the Flutter app.
+4. Implement prompt template management for the AI coach role.
+5. Implement functions/providers to handle requests to Vertex AI and process responses within Flutter.
+6. Implement error handling with appropriate retries and fallbacks in the Flutter provider.
+7. Create test widgets or integration tests to verify AI integration within the Flutter app.
 
 # Test Strategy:
-Create unit tests for prompt generation. Test the API integration with sample conversation inputs and verify appropriate responses. Validate error handling by simulating API failures.
+Create unit tests for prompt generation (Dart). Test the API integration with sample conversation inputs within the Flutter app and verify appropriate responses. Validate error handling by simulating API failures in the provider.
 
 # Subtasks:
-## 1. Set up authentication and environment configuration for Vertex AI [in-completed]
+## 1. Set up Firebase authentication and Flutter environment configuration [pending]
 ### Dependencies: None
-### Description: Configure Google Cloud authentication, install necessary dependencies, and set up the environment for Vertex AI integration in Cloud Functions.
+### Description: Configure Firebase project integration, install necessary Flutter dependencies, and set up the environment for Vertex AI integration in the Flutter app.
 ### Details:
 Implementation steps:
-1. Create a service account with appropriate Vertex AI permissions in Google Cloud Console
-2. Generate and download service account key JSON file
-3. Configure Cloud Functions to use the service account credentials
-4. Update requirements.txt to include vertex-ai SDK and other dependencies (google-cloud-aiplatform>=1.36.0)
-5. Create environment variables for project ID, location, and other configuration parameters
-6. Set up a configuration module to centralize access to these settings
+1. Ensure Firebase project is set up and configured for the Flutter app (firebase_options.dart).
+2. Add `firebase_core`, `firebase_vertexai`, and `flutter_ai_toolkit` to `pubspec.yaml`.
+3. Run `flutter pub get` to install dependencies.
+4. Initialize Firebase in `main.dart` (`Firebase.initializeApp`).
+5. Define necessary configuration parameters (e.g., model name, location) potentially in a config file or constants.
 
 Testing approach:
-- Create a simple test function that attempts to authenticate with Vertex AI
-- Verify credentials are properly loaded
-- Ensure all required environment variables are accessible
+- Verify Firebase initializes correctly on app startup.
+- Ensure Vertex AI related packages are imported without errors.
+- Create a simple test widget that attempts to initialize the `GenerativeModel`.
 
-## 2. Implement core Vertex AI client initialization and API interaction [in-completed]
-### Dependencies: 2.1
-### Description: Create functions to initialize the Vertex AI client and handle basic interactions with the Gemini API.
+## 2. Implement core Vertex AI client initialization and API interaction in Flutter [in_progress]
+### Dependencies: 3.1
+### Description: Create providers or services to initialize the Vertex AI client (`GenerativeModel`) and handle basic interactions with the Gemini API within Flutter.
 ### Details:
 Implementation steps:
-1. Create a module for Vertex AI client utilities
-2. Implement a function to initialize the Vertex AI client using authentication from subtask 1
-3. Create a base function to send requests to Gemini model API
-4. Implement parameter handling for model requests (temperature, max_tokens, etc.)
-5. Create a function to process and standardize API responses
-6. Implement basic request/response logging
+1. Create a Dart module/provider (e.g., `CoachingVertexProvider`) for Vertex AI interactions.
+2. Implement initialization of `GenerativeModel` using `FirebaseVertexAI.instance`.
+3. Implement methods within the provider to send requests to the Gemini model API (e.g., `sendMessageStream`, `generateStream`).
+4. Implement parameter handling for model requests (temperature, max_tokens, etc.) if needed via `GenerationConfig`.
+5. Implement processing and streaming of API responses within the provider.
+6. Implement basic request/response logging using `dart:developer` or a logging package.
 
 Testing approach:
-- Create unit tests for client initialization
-- Test sending a simple prompt to the Gemini model
-- Verify response structure matches expected format
-- Test with different parameter configurations
+- Create unit tests for provider initialization.
+- Test sending a simple prompt to the Gemini model via the provider.
+- Verify response stream yields expected text chunks.
+- Test with different parameter configurations if applicable.
 
-## 3. Develop prompt template management system [in-completed]
-### Dependencies: 2.2
-### Description: Create a system to manage prompt templates for the AI coach role, including storage, retrieval, and formatting of prompts.
+## 3. Develop prompt template management system [in_progress]
+### Dependencies: 3.2
+### Description: Create a system to manage prompt templates for the AI coach role, including storage, retrieval, and formatting of prompts in Dart.
 ### Details:
 Implementation steps:
-1. Define a structure for storing prompt templates (JSON, YAML, or database)
-2. Create functions to load and validate prompt templates
-3. Implement template variable substitution functionality
-4. Create a prompt builder that constructs complete prompts with context, history, and user input
-5. Implement functions to handle different coaching scenarios with appropriate templates
-6. Add versioning support for prompt templates
+1. Define a structure for storing prompt templates (e.g., Map in a Dart class).
+2. Create functions/methods to load and retrieve prompt templates.
+3. Implement template variable substitution functionality.
+4. Create a prompt builder or integrate formatting directly into the provider (`CoachingVertexProvider`).
+5. Implement functions to handle different coaching scenarios with appropriate templates.
+6. Add versioning support for prompt templates if needed.
 
 Testing approach:
-- Test template loading and validation
-- Verify variable substitution works correctly
-- Test prompt building with various inputs
-- Ensure proper handling of missing template variables
+- Test template loading and retrieval.
+- Verify variable substitution works correctly.
+- Test prompt building/formatting with various inputs.
+- Ensure proper handling of missing template variables or templates.
 
-## 4. Implement error handling, testing endpoints, and integration verification [pending]
-### Dependencies: 2.2, 2.3
-### Description: Create robust error handling for the Vertex AI integration, implement retry mechanisms, and develop test endpoints to verify the full integration.
+## 4. Implement error handling, testing, and integration verification in Flutter [pending]
+### Dependencies: 3.2, 3.3
+### Description: Create robust error handling for the Vertex AI integration within the Flutter provider, implement retry mechanisms, and develop tests to verify the full integration in the app.
 ### Details:
 Implementation steps:
-1. Implement error detection and classification for Vertex AI API errors
-2. Create retry mechanism with exponential backoff for transient failures
-3. Implement fallback strategies for different error scenarios
-4. Develop comprehensive error logging
-5. Create a test HTTP endpoint in Cloud Functions to verify the complete integration
-6. Implement a simple chat interface for manual testing
-7. Create integration tests that verify the end-to-end functionality
+1. Implement error detection and classification for `firebase_vertexai` API errors within the provider's API call blocks (`try-catch`).
+2. Create retry mechanism with exponential backoff for transient failures (can use packages like `retry`).
+3. Implement fallback strategies for different error scenarios (e.g., yielding specific error messages).
+4. Develop comprehensive error logging.
+5. Create widget tests or integration tests in Flutter to verify the complete integration.
+6. Use the existing chat interface (`LlmChatView`) for manual testing.
+7. Create integration tests that verify the end-to-end functionality within the Flutter app.
 
 Testing approach:
-- Test error handling by simulating various error conditions
-- Verify retry mechanism works as expected
-- Test fallback strategies
-- Use the test endpoint to verify complete integration
-- Conduct end-to-end testing with sample conversations
+- Test error handling by simulating various error conditions (e.g., invalid API key, network issues - might require mocking).
+- Verify retry mechanism works as expected.
+- Test fallback strategies.
+- Use widget/integration tests to verify complete integration.
+- Conduct end-to-end testing with sample conversations in the app.
 

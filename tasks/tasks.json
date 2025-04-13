@@ -71,7 +71,7 @@
       "id": 3,
       "title": "Implement Conversation History Storage",
       "description": "Create Firestore database structure and functions to store and retrieve conversation history",
-      "status": "pending",
+      "status": "completed",
       "dependencies": [
         1
       ],
@@ -203,7 +203,7 @@
       "id": 6,
       "title": "Set Up Flutter Project Structure",
       "description": "Initialize Flutter application with appropriate project structure, theme, and navigation",
-      "status": "completed",
+      "status": "done",
       "dependencies": [],
       "priority": "high",
       "details": "1. Create new Flutter project with recommended architecture\n2. Set up folder structure (screens, widgets, services, models)\n3. Configure theme and styling constants\n4. Implement basic navigation framework\n5. Add required dependencies in pubspec.yaml\n6. Configure platform-specific settings for iOS and Android\n7. Set up asset handling for images and other resources\n8. Create placeholder screens for main app sections",
@@ -213,7 +213,7 @@
       "id": 7,
       "title": "Develop Chat UI Components",
       "description": "Create the core UI elements for the chat interface including message display and input areas",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         6
       ],

@@ -1,6 +1,6 @@
 # Task ID: 6
 # Title: Set Up Flutter Project Structure
-# Status: completed
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Initialize Flutter application with appropriate project structure, theme, and navigation

@@ -20,11 +20,6 @@ In a chat, follow the life cycle of a chat:
         4. ask for clarification - goto 2.
 
 
-on the backend I want to use langchain and gemini for the chat
-I want the app has memory, so it can remember the conversation history and list in the history page.
-It also need system prompt to be able to provide general instructions.
-
-
 Now play the role as engineer manager, help me think through the core features of implementing such app.
 
 

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -12,7 +10,6 @@ import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/chat_page.dart';
 
-import '../gemini_api_key.dart';
 
 // Make main async and initialize Firebase
 void main() async {

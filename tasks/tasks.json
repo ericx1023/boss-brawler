@@ -225,7 +225,7 @@
       "id": 8,
       "title": "Implement API Client Service",
       "description": "Create service layer in Flutter to communicate with backend API endpoints",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         6
       ],

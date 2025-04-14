@@ -34,7 +34,7 @@ void main() {
   });
 
   // Helper function to create a GenerateContentResponse for mocking
-  GenerateContentResponse _createResponse({String? text, FinishReason? finishReason = FinishReason.stop}) {
+  GenerateContentResponse createResponse({String? text, FinishReason? finishReason = FinishReason.stop}) {
     final content = Content('model', [TextPart(text ?? '')]);
     final candidate = Candidate(
       content,       // 1. content
@@ -55,8 +55,8 @@ void main() {
     // Individual tests will go here
     testWidgets('sendMessageStream success updates history and state', (WidgetTester tester) async {
       // Arrange: Mock the API response stream using the helper
-      final responseChunk1 = _createResponse(text: 'Hello ');
-      final responseChunk2 = _createResponse(text: 'there!');
+      final responseChunk1 = createResponse(text: 'Hello ');
+      final responseChunk2 = createResponse(text: 'there!');
       final responseStream = Stream.fromIterable([responseChunk1, responseChunk2]);
 
       when(mockModelAdapter.generateContentStream(any)) // Mock adapter method
@@ -236,8 +236,8 @@ void main() {
 
     testWidgets('generateStream success yields chunks', (WidgetTester tester) async {
        // Arrange using the helper
-       final responseChunk1 = _createResponse(text: 'Generated ');
-       final responseChunk2 = _createResponse(text: 'content.');
+       final responseChunk1 = createResponse(text: 'Generated ');
+       final responseChunk2 = createResponse(text: 'content.');
        final responseStream = Stream.fromIterable([responseChunk1, responseChunk2]);
 
        when(mockModelAdapter.generateContentStream(any)) // Mock adapter method

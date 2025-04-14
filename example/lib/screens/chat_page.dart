@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_markdown/flutter_markdown.dart'; // Import flutter_markdown
 
 import '../main.dart'; // For App.title
 import '../../gemini_api_key.dart'; // Adjusted path for api key
+import '../widgets/analysis_feedback_view.dart'; // Import the new widget
 
 // Define your desired system prompt here
 const String negotiationCoachSystemPrompt = """
@@ -38,9 +40,7 @@ class _ChatPageState extends State<ChatPage> {
   void _updateSystemPrompt() {
     setState(() {
       // Combine base prompt with user context
-      _currentSystemPrompt = negotiationCoachSystemPrompt + 
-                             "\n\nAdditional Context Provided by User:\n" + 
-                             _contextController.text;
+      _currentSystemPrompt = "$negotiationCoachSystemPrompt\n\nAdditional Context Provided by User:\n${_contextController.text}";
     });
   }
 
@@ -50,6 +50,21 @@ class _ChatPageState extends State<ChatPage> {
     _contextController.removeListener(_updateSystemPrompt);
     _contextController.dispose();
     super.dispose();
+  }
+
+  // Define the response builder function
+  Widget _buildResponseWidget(BuildContext context, String message) {
+    const analysisMarker = '[ANALYSIS]:';
+    if (message.startsWith(analysisMarker)) {
+      final analysisContent = message.substring(analysisMarker.length).trim();
+      return AnalysisFeedbackView(analysisContent: analysisContent);
+    } else {
+      // Default rendering using MarkdownBody
+      return MarkdownBody(
+        data: message,
+        selectable: true, // Allow text selection
+      );
+    }
   }
 
   @override
@@ -83,6 +98,7 @@ class _ChatPageState extends State<ChatPage> {
                     systemInstruction: Content.system(_currentSystemPrompt),
                   ),
                 ),
+                responseBuilder: _buildResponseWidget, // Pass the response builder
               ),
             ),
           ],

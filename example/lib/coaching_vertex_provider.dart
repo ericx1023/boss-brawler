@@ -80,16 +80,16 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
         }
       }
 
-       if (fullResponse.isEmpty && errorMessage == null) { // Check if errorMessage already set (e.g., by safety block)
+       if (fullResponse.isEmpty) { // Check if errorMessage already set (e.g., by safety block)
          // Handle cases where the stream completed but yielded no text
          developer.log('API call succeeded but returned empty response.', name: 'CoachingVertexProvider');
          const emptyResponseError = 'AI returned an empty response.';
          errorMessage = ChatMessage(origin: MessageOrigin.llm, text: emptyResponseError, attachments: []); // Use llm, add attachments
          yield 'Error: $emptyResponseError';
-       } else if (errorMessage == null) { // Only add successful LLM response if no error occurred
-         final llmMessage = ChatMessage(origin: MessageOrigin.llm, text: fullResponse, attachments: []);
-         _history.add(llmMessage);
-       }
+       } else // Only add successful LLM response if no error occurred
+       final llmMessage = ChatMessage(origin: MessageOrigin.llm, text: fullResponse, attachments: []);
+       _history.add(llmMessage);
+     
 
 
     } on FirebaseException catch (e) {

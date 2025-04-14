@@ -71,6 +71,13 @@ Implementation steps:
    - Format feedback messages for display in the chat
    - Create UI components to present analysis in a user-friendly way
    - Implement logic to present analysis at appropriate points in conversation
+   - **Implementation Plan:**
+     - Define a special marker (e.g., `[ANALYSIS]:`) for analysis messages.
+     - Use a custom `responseBuilder` in `LlmChatView` within `chat_page.dart`.
+     - The `responseBuilder` will check for the marker.
+     - If the marker is present, render the message using a new custom widget (`AnalysisFeedbackView`) for structured display (e.g., cards, lists).
+     - Otherwise, render the message normally.
+     - Create `AnalysisFeedbackView` widget in `ai/example/lib/widgets/analysis_feedback_view.dart`.
 6. Add functionality to allow users to request additional details on specific feedback points
 7. Implement caching for performance optimization
 

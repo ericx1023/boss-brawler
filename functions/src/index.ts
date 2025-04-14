@@ -1,8 +1,72 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import * as fs from "fs"; // Import fs for file reading
+import * as path from "path"; // Import path for resolving file paths
+
+// Import Vertex AI library
+import {VertexAI} from "@google-cloud/vertexai";
+
 admin.initializeApp(); // Initialize Firebase Admin SDK
-// TODO: Initialize Firebase Admin SDK if not already done
-// admin.initializeApp();
+
+// Initialize Vertex AI client
+// Ensure GCLOUD_PROJECT and GCLOUD_LOCATION are set in your environment
+const project = process.env.GCLOUD_PROJECT || functions.config().project?.id;
+const location = process.env.GCLOUD_LOCATION || "us-central1"; // Default location, change if needed
+
+if (!project) {
+  console.error("GCLOUD_PROJECT environment variable not set.");
+  // Handle the error appropriately, maybe throw or exit
+}
+
+const vertexAI = new VertexAI({project: project, location: location});
+const generativeModel = vertexAI.getGenerativeModel({
+  // Specify the Gemini model to use
+  model: "gemini-1.5-flash", // Or your preferred model
+});
+
+// --- Helper function to call the AI service ---
+/**
+ * Calls the Vertex AI Gemini model to get analysis.
+ * @param {string} prompt The complete prompt to send to the model.
+ * @return {Promise<string>} The raw text response from the model.
+ */
+async function callAIService(prompt: string): Promise<string> {
+  try {
+    const request = {
+      contents: [{role: "user", parts: [{text: prompt}]}],
+    };
+    const resp = await generativeModel.generateContent(request);
+
+    if (
+      !resp.response ||
+      !resp.response.candidates ||
+      resp.response.candidates.length === 0 ||
+      !resp.response.candidates[0].content ||
+      !resp.response.candidates[0].content.parts ||
+      resp.response.candidates[0].content.parts.length === 0 ||
+      !resp.response.candidates[0].content.parts[0].text
+    ) {
+      throw new Error("Invalid response structure from AI service");
+    }
+
+    // Extract the text content
+    const analysisText = resp.response.candidates[0].content.parts[0].text;
+    // Ensure the response starts with the marker as requested in the prompt
+    if (!analysisText.startsWith("[ANALYSIS]:")) {
+        functions.logger.warn("AI response did not start with [ANALYSIS]: marker. Prepending it.", { rawResponse: analysisText});
+        return `[ANALYSIS]:\n${analysisText}`; // Prepend marker if missing
+    }
+
+    return analysisText;
+  } catch (error) {
+    functions.logger.error("Error calling Vertex AI service:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to call AI service.",
+      (error as Error).message,
+    );
+  }
+}
 
 /**
  * Analyzes a user's negotiation message using an AI model.
@@ -53,90 +117,75 @@ exports.analyzeNegotiationMessage = functions.https
         return {status: "skipped", reason: "Trigger condition not met"};
       }
 
-      // --- 2. Fetch Prompt ---
-      // TODO: Load the prompt template
-      // (e.g., from Firestore config or a file)
-      // Splitting the long prompt string
-      // into multiple lines using template literals
-      const promptTemplate = `
-Analyze the following negotiation message based on Clarity, Assertiveness,
-Flexibility, and Empathy metrics (scale 1-5).
-Provide a score for each metric and brief constructive feedback for improvement.
+      // --- 2. Fetch and Fill Prompt ---
+      let promptTemplate: string;
+      try {
+        // Resolve path relative to the built JS file (in lib/)
+        const promptPath = path.resolve(
+          __dirname,
+          "../src/prompts/negotiation_analysis_prompt.txt", // Adjusted path for build output
+        );
+        // Note: For deployment, ensure prompts/ folder is included
+        //       in the deployment package (check firebase.json functions source)
+         if (!fs.existsSync(promptPath)) {
+            // Fallback for local development where __dirname might be src/
+            const devPath = path.resolve(__dirname, "prompts/negotiation_analysis_prompt.txt");
+            if (fs.existsSync(devPath)) {
+                promptTemplate = fs.readFileSync(devPath, "utf-8");
+            } else {
+                 throw new Error(`Prompt file not found at ${promptPath} or ${devPath}`);
+            }
+        } else {
+            promptTemplate = fs.readFileSync(promptPath, "utf-8");
+        }
 
-User Message:
-"{user_message}"
+      } catch (err) {
+        functions.logger.error("Error reading prompt template file:", err);
+        throw new functions.https.HttpsError(
+          "internal",
+          "Could not load analysis prompt template.",
+        );
+      }
 
-Analysis Output Format (JSON):
-{
-  "scores": {
-    "clarity": <score>,
-    "assertiveness": <score>,
-    "flexibility": <score>,
-    "empathy": <score>
-  },
-  "feedback": {
-    "overall": "<Overall constructive feedback>",
-    "clarity": "<Specific feedback on clarity>",
-    "assertiveness": "<Specific feedback on assertiveness>",
-    "flexibility": "<Specific feedback on flexibility>",
-    "empathy": "<Specific feedback on empathy>"
-  }
-}
-`; // Placeholder
-      const filledPrompt = promptTemplate.replace("{user_message}", message);
+      const filledPrompt = promptTemplate.replace("{{USER_MESSAGE}}", message);
 
       // --- 3. Call AI Service ---
-      // TODO: Replace with actual call to the AI service
-      // (e.g., Vertex AI, OpenAI)
       functions.logger.info(
         `Calling AI service for conversation ${conversationId}`,
         {structuredData: true},
       );
-      // const aiResponse = await callAIService(filledPrompt);
-      // Mock response for now:
-      const mockAiResponse = {
-        scores: {
-          clarity: 4,
-          assertiveness: 3,
-          flexibility: 5,
-          empathy: 4,
-        },
-        feedback: {
-          overall: "Good progress, focus on being slightly more assertive.",
-          clarity: "Message is clear.",
-          assertiveness:
-            "Consider stating your minimum acceptable point more directly.",
-          flexibility: "Excellent flexibility shown.",
-          empathy: "Good acknowledgement of the other party's view.",
-        },
-      };
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const analysisResult = mockAiResponse; // Assume parsing is done if needed
+      const analysisText = await callAIService(filledPrompt); // Get raw text
 
-      // --- 4. Process & Format Results ---
-      // TODO: Add any additional processing or validation if needed
-      const structuredResult = {
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        messageAnalyzed: message,
-        ...analysisResult,
-      };
+      // --- 4. Store Analysis Text in Conversation Document ---
+      const conversationRef = admin.firestore()
+        .collection("conversations").doc(conversationId);
 
-      // --- 5. Store Results (Covered in Subtask 4.3) ---
-      // TODO: Implement logic to save structuredResult to Firestore
-      const analysisCollectionRef = admin.firestore()
-        .collection("conversations").doc(conversationId)
-        .collection("analysis");
-      await analysisCollectionRef.add(structuredResult);
-      functions.logger.info(
-        `Analysis successful for conversation ${conversationId}`,
-        {structuredData: true},
-      );
+      try {
+        await conversationRef.update({
+          latestAnalysisFeedback: analysisText, // Store the raw AI response text
+          lastAnalysisTimestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        functions.logger.info(
+          `Analysis text stored for conversation ${conversationId}`,
+          {structuredData: true},
+        );
+      } catch (dbError) {
+        functions.logger.error(
+          `Firestore update failed for conversation ${conversationId}:`,
+          dbError,
+        );
+        // Decide if this should be a fatal error for the function
+        throw new functions.https.HttpsError(
+          "internal",
+          "Failed to store analysis result.",
+          (dbError as Error).message,
+        );
+      }
 
-      // --- 6. Return Results ---
-      // The function returns the result,
-      // the client-side will handle integration
-      return {status: "success", analysis: structuredResult};
+      // --- 5. Return Success ---
+      // We don't need to return the analysis itself,
+      // as the client will listen to Firestore.
+      return {status: "success"};
     } catch (error) {
       functions.logger.error(
         `Error analyzing message for conversation ${conversationId}:`,

@@ -29,6 +29,7 @@ dependencies:
   future_builder_ex: ^5.0.0
   split_view: ^3.2.1
   firebase_app_check: ^0.3.2+5
+  idb_shim: ^2.6.5+1
 
 dev_dependencies:
   flutter_test:

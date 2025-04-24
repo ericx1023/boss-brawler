@@ -1,13 +1,20 @@
 import 'dart:async'; // Import async for StreamSubscription
+import 'dart:convert'; // Import dart:convert for JSON encoding
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_markdown/flutter_markdown.dart'; // Import flutter_markdown
+import 'dart:io' as io;
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart' as pp;
+import 'package:universal_platform/universal_platform.dart'; // Import for platform checking
 
 import '../main.dart'; // For App.title
 import '../../gemini_api_key.dart'; // Adjusted path for api key
 import '../widgets/analysis_feedback_view.dart'; // Import the new widget
+import '../services/chat_history_storage.dart'; // Import the storage abstraction
+import '../services/chat_storage_factory.dart'; // Import the factory
 
 // Define your desired system prompt here
 const String negotiationCoachSystemPrompt = """
@@ -41,16 +48,23 @@ class _ChatPageState extends State<ChatPage> {
   String? _selectedScenario; // Nullable string for selected scenario
 
   late GeminiProvider _provider; // Make provider mutable
+  late ChatHistoryStorage _storage; // Add storage field
 
   @override
   void initState() {
     super.initState();
     _currentSystemPrompt = negotiationCoachSystemPrompt;
 
+    // Initialize storage using the factory
+    _storage = ChatStorageFactory.getStorage();
+
     _updateSystemPrompt();
 
     _contextController.addListener(_updateSystemPrompt);
-
+    // Don't add listener here as the provider is recreated in _updateSystemPrompt
+    
+    // Load history using the storage abstraction
+    _loadHistory();
   }
 
   void _updateSystemPrompt() {
@@ -85,7 +99,16 @@ class _ChatPageState extends State<ChatPage> {
 
       _currentSystemPrompt = promptBuilder.toString().trim(); // Get the final string and trim
 
+      // Remove listener from old provider if it exists
+      try {
+        _provider.removeListener(_saveHistory);
+      } catch (e) {
+        // Provider might not be initialized yet
+        debugPrint('No previous provider to remove listener from');
+      }
+
       // Recreate the provider with the new system instruction
+      debugPrint('Creating GeminiProvider');
       _provider = GeminiProvider(
         model: GenerativeModel(
           model: 'gemini-2.0-flash', // Or your preferred model
@@ -93,13 +116,18 @@ class _ChatPageState extends State<ChatPage> {
           systemInstruction: Content.system(_currentSystemPrompt), // Use the constructed prompt
         ),
       );
+      debugPrint('GeminiProvider created');
+      
+      // Add listener to the new provider
+      debugPrint('Adding listener to new provider');
+      _provider.addListener(_saveHistory);
     });
   }
 
 
   // --- Custom Message Sender ---
   Stream<String> _messageSender(String prompt, {Iterable<Attachment> attachments = const []}) {
-
+    debugPrint('Sending message: $prompt');
     return _provider.sendMessageStream(prompt, attachments: attachments);
   }
 
@@ -107,6 +135,7 @@ class _ChatPageState extends State<ChatPage> {
   void dispose() {
     // Remove listener before disposing controller
     _contextController.removeListener(_updateSystemPrompt);
+    _provider.removeListener(_saveHistory);
     _contextController.dispose();
     // _analysisSubscription?.cancel(); // Cancel the Firestore listener - commented out
     super.dispose();
@@ -205,4 +234,30 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
       );
+
+  Future<void> _saveHistory() async {
+    debugPrint('_saveHistory called');
+    
+    // Get the latest history
+    final history = _provider.history.toList();
+    debugPrint('Saving: ${history.length} messages');
+
+    // Use the storage abstraction to save history
+    await _storage.saveHistory(history);
+  }
+
+  Future<void> _loadHistory() async {
+    try {
+      // Use the storage abstraction to load history
+      final history = await _storage.loadHistory();
+      
+      if (history.isNotEmpty) {
+        // Set the history on the provider
+        _provider.history = history;
+        debugPrint('Loaded ${history.length} messages from storage');
+      }
+    } catch (e) {
+      debugPrint('Error loading history: $e');
+    }
+  }
 } 

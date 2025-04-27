@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 // Import the screens
 import 'screens/home_screen.dart';
 import 'screens/chat_page.dart';
+import 'screens/chat_list_screen.dart';
 
 
 // Make main async and initialize Firebase
@@ -33,6 +34,7 @@ class App extends StatelessWidget {
         routes: {
           '/home': (context) => const HomeScreen(),
           '/chat': (context) => const ChatPage(),
+          '/chats': (context) => const ChatListScreen(),
         },
       );
 }

@@ -6,11 +6,12 @@
 # Description: Create functionality to analyze user responses and provide structured feedback on negotiation skills
 # Details:
 1. Design analysis prompt template with specific evaluation metrics (clarity, assertiveness)
-2. Implement Cloud Function to process user messages for analysis
-3. Create structured format for feedback responses
-4. Develop logic to determine when to trigger analysis (e.g., after X messages)
+2. Implement indexeddb to save user messages
+3.1 create a service of analyzer LLM to analyze the user messages
+3.2 start from the 3rd message,  every user response trigger analysis afterwards
+4. Create structured format for analyze responses, the structrure should be {origin:"analyzer",  text: "this is the analyze"}
 5. Integrate analysis results into the conversation flow
-6. Store analysis results in Firestore linked to the conversation
+6. Store analysis results into indexeddb to the store conversation
 7. Implement error handling specific to analysis functionality
 
 # Test Strategy:

@@ -1,20 +1,19 @@
 import 'dart:async'; // Import async for StreamSubscription
-import 'dart:convert'; // Import dart:convert for JSON encoding
+// Import dart:convert for JSON encoding
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_markdown/flutter_markdown.dart'; // Import flutter_markdown
-import 'dart:io' as io;
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart' as pp;
-import 'package:universal_platform/universal_platform.dart'; // Import for platform checking
+// Import for platform checking
 
 import '../main.dart'; // For App.title
 import '../../gemini_api_key.dart'; // Adjusted path for api key
 import '../widgets/analysis_feedback_view.dart'; // Import the new widget
 import '../services/chat_history_storage.dart'; // Import the storage abstraction
 import '../services/chat_storage_factory.dart'; // Import the factory
+import '../services/analyzer_service.dart'; // Import analyzer service
+import '../services/list_model_service.dart'; // Import list models service
 
 // Define your desired system prompt here
 const String negotiationCoachSystemPrompt = """
@@ -111,7 +110,7 @@ class _ChatPageState extends State<ChatPage> {
       debugPrint('Creating GeminiProvider');
       _provider = GeminiProvider(
         model: GenerativeModel(
-          model: 'gemini-2.0-flash', // Or your preferred model
+          model: 'gemini-2.5-pro-exp-03-25', // Or your preferred model
           apiKey: geminiApiKey,
           systemInstruction: Content.system(_currentSystemPrompt), // Use the constructed prompt
         ),
@@ -126,9 +125,33 @@ class _ChatPageState extends State<ChatPage> {
 
 
   // --- Custom Message Sender ---
-  Stream<String> _messageSender(String prompt, {Iterable<Attachment> attachments = const []}) {
+  Stream<String> _messageSender(String prompt, {Iterable<Attachment> attachments = const []}) async* {
+    // Intercept '/listmodels' command to display available models
+    if (prompt.trim() == '/listmodels') {
+      final listText = await listModelsAsString();
+      final listMsg = ChatMessage.llm();
+      listMsg.text = listText;
+      _provider.history = [..._provider.history, listMsg];
+      yield listText;
+      return;
+    }
     debugPrint('Sending message: $prompt');
-    return _provider.sendMessageStream(prompt, attachments: attachments);
+    // Forward user message and assistant response
+    await for (final chunk in _provider.sendMessageStream(prompt, attachments: attachments)) {
+      yield chunk;
+    }
+    // After AI response completes, trigger analysis if user has sent >= 3 messages
+    final userMessageCount = _provider.history.where((msg) => msg.origin.isUser).length;
+    if (userMessageCount >= 2) {
+      try {
+        final analysisMsg = await AnalyzerService.instance.analyzeMessages(_provider.history.toList());
+        // Append analysis message to provider history for display and storage
+        _provider.history = [..._provider.history, analysisMsg];
+        yield analysisMsg.text ?? '';
+      } catch (e) {
+        debugPrint('Analysis failed: $e');
+      }
+    }
   }
 
   @override

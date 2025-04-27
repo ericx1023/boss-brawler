@@ -86,8 +86,10 @@ class CoachingVertexProvider with ChangeNotifier implements LlmProvider {
          const emptyResponseError = 'AI returned an empty response.';
          errorMessage = ChatMessage(origin: MessageOrigin.llm, text: emptyResponseError, attachments: []); // Use llm, add attachments
          yield 'Error: $emptyResponseError';
-       } else // Only add successful LLM response if no error occurred
+       } else {
+         // Only add successful LLM response if no error occurred
        final llmMessage = ChatMessage(origin: MessageOrigin.llm, text: fullResponse, attachments: []);
+       }
        _history.add(llmMessage);
      
 

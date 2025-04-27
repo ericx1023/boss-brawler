@@ -1,10 +1,7 @@
-import 'dart:convert';
-import 'dart:html' as html;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:idb_shim/idb_browser.dart';
-import 'package:idb_shim/idb_shim.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_history_storage.dart';

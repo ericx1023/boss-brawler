@@ -3,7 +3,6 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:firebase_vertexai/firebase_vertexai.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart'; // For ChatMessage, LlmProvider
 import 'package:flutter_ai_toolkit_example/coaching_vertex_provider.dart';
 import 'package:flutter_ai_toolkit_example/prompt_manager.dart'; // Import PromptManager

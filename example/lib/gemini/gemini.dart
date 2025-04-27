@@ -28,7 +28,7 @@ class ChatPage extends StatelessWidget {
     appBar: AppBar(title: const Text(App.title)),
     body: LlmChatView(
       provider: GeminiProvider(
-        model: GenerativeModel(model: 'gemini-2.0-flash', apiKey: geminiApiKey),
+        model: GenerativeModel(model: 'gemini-2.5-pro-exp-03-25', apiKey: geminiApiKey),
       ),
     ),
   );

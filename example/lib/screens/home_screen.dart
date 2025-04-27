@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/chat_history_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,22 +15,25 @@ class HomeScreen extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.chat),
-            title: const Text('Chats'),
+            title: const Text('New Chat'),
+            onTap: () {
+              // Navigate to Chats list screen
+              Navigator.pushNamed(context, '/chat');
+            },
+          ),
+          const SizedBox(height: 24),
+
+          ListTile(
+            leading: const Icon(Icons.chat),
+            title: const Text('Chat History'),
             onTap: () {
               // Navigate to Chats list screen
               Navigator.pushNamed(context, '/chats');
             },
           ),
           const SizedBox(height: 24),
+
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Start a new chat
-          Navigator.pushNamed(context, '/chat/new');
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('New Chat'),
       ),
     );
   }

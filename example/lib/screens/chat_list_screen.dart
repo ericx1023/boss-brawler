@@ -62,7 +62,15 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chats')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+          },
+        ),
+        title: const Text('Chats'),
+      ),
       body: FutureBuilder<List<ChatSession>>(
         future: _sessionsFuture,
         builder: (context, snapshot) {

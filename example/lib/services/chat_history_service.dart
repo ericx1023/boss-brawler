@@ -20,4 +20,9 @@ class ChatHistoryService {
   Future<List<ChatSession>> getAllSessions() {
     return _storage.getAllSessions();
   }
+
+  /// Clear all chat sessions from storage.
+  Future<void> clearHistory() {
+    return _storage.clearHistory();
+  }
 } 

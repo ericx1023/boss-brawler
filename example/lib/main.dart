@@ -21,7 +21,7 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-  static const title = 'Negotiation Page';
+  static const title = 'Nego Dojo';
 
   const App({super.key});
 

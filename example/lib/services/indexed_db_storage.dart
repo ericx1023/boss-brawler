@@ -295,9 +295,20 @@ class IndexedDBStorage implements ChatHistoryStorage {
     debugPrint('Legacy saveHistory called with ${history.length} messages');
     
     try {
-      // 不再檢查現有會話，直接創建新會話
-      await createSession(history);
-      debugPrint('Created new chat session with ${history.length} messages');
+      // Update existing active session or create new one if none exists
+      String? activeUuid = await _getActiveSessionUuid();
+      if (activeUuid != null) {
+        final session = ChatSession(
+          uuid: activeUuid,
+          messages: history,
+          timestamp: DateTime.now().millisecondsSinceEpoch,
+        );
+        await saveSession(session);
+        debugPrint('Updated existing chat session with ${history.length} messages');
+      } else {
+        final session = await createSession(history);
+        debugPrint('Created new chat session with ${history.length} messages');
+      }
     } catch (e) {
       debugPrint('Error in legacy saveHistory: $e');
       rethrow;

@@ -17,12 +17,13 @@ import '../services/chat_service.dart';
 import '../services/message_sender_service.dart';
 import '../services/chat_history_service.dart';
 import '../services/analysis_service.dart';
+import '../services/chat_storage_factory.dart';
 
 // Define your desired system prompt here
 const String negotiationCoachSystemPrompt = """
 Play a role of a tough negotiation opponent to simulate real life negotiation situation. 
 Keep your responses concise and realistic. 
-You will reject the user, give a reason related to the context.
+You tend to reject the user, give a reason related to the context.
 """;
 
 // Predefined Scenarios
@@ -36,7 +37,10 @@ final List<String> predefinedScenarios = [
 
 // Convert to StatefulWidget
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  /// Optional UUID to load specific chat session
+  final String? sessionUuid;
+
+  const ChatPage({Key? key, this.sessionUuid}) : super(key: key);
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -65,6 +69,15 @@ class _ChatPageState extends State<ChatPage> {
       analysisService: _analysisService,
     );
 
+    // If a specific session UUID is provided, load its history
+    if (widget.sessionUuid != null) {
+      ChatStorageFactory.getSession(widget.sessionUuid!).then((session) {
+        if (session != null) {
+          // Override provider history with loaded session
+          _chatService.provider.history = session.messages;
+        }
+      });
+    }
     // Update prompt when context changes
     _contextController.addListener(() {
       _chatService.updatePrompt(

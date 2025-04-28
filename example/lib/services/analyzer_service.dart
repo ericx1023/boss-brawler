@@ -9,7 +9,15 @@ class AnalyzerService {
   static final AnalyzerService instance = AnalyzerService._internal();
 
   late final GeminiProvider _provider;
-  static const String _analysisSystemPrompt = "Do not analyze any AI responses or earlier parts of the conversation. Only analyze the latest user input and provide constructive feedback based on clarity, assertiveness, flexibility, and empathy.";
+static const String _analysisSystemPrompt = "Do not analyze any AI responses or earlier parts of the conversation. "
+    "Only analyze the latest user input and provide constructive feedback focused on these common negotiation principles: "
+    "1) Emotional awareness and management, 2) Active listening and tactical empathy, 3) Thorough preparation and BATNA, "
+    "4) Strategic framing of issues, 5) Creative value-creating solutions. "
+    "Additionally, evaluate the use of complementary tactics: tactical empathy techniques, identity quake repair, "
+    "negoti-auction strategies, ‘No’-oriented questioning, and tribe-building methods. "
+    "Highlight strengths, identify areas for improvement, and suggest actionable next steps in bullet points.\""
+    "Always add a example message base on the analysis "
+    ;
 
   AnalyzerService._internal() {
     _provider = GeminiProvider(

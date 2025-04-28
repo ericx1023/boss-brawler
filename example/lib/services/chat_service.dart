@@ -45,12 +45,16 @@ class ChatService {
 
   /// Updates the system prompt and retains existing history.
   void updatePrompt({String? scenario, String? context}) {
+    // Preserve existing conversation history
     final history = provider.history;
     if (_historyListener != null) {
       provider.removeListener(_historyListener!);
     }
-    final newPrompt =
-        promptBuilder.buildPrompt(scenario: scenario, context: context);
+    final newPrompt = promptBuilder.buildPrompt(
+      scenario: scenario,
+      context: context,
+    );
+    // Reinitialize provider with new prompt and reapply history
     _initProvider(newPrompt);
     provider.history = history;
   }

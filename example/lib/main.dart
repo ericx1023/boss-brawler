@@ -33,7 +33,12 @@ class App extends StatelessWidget {
         initialRoute: '/home',
         routes: {
           '/home': (context) => const HomeScreen(),
-          '/chat': (context) => const ChatPage(),
+          '/chat': (context) {
+            // Load specific chat session if UUID argument is provided
+            final args = ModalRoute.of(context)!.settings.arguments;
+            final sessionUuid = args is String ? args : null;
+            return ChatPage(sessionUuid: sessionUuid);
+          },
           '/chats': (context) => const ChatListScreen(),
         },
       );

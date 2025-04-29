@@ -3,6 +3,9 @@ import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'chat_service.dart';
 import 'analysis_service.dart';
 import 'list_model_service.dart';
+import 'dart:convert';
+import 'tts_service.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 /// Service to send messages through chat provider with command interception and analysis
 class MessageSenderService {
@@ -44,7 +47,26 @@ class MessageSenderService {
         final analysisMsg = await analysisService.analyzeMessages(provider.history.toList());
         analysisPlaceholder.text = analysisMsg.text;
         provider.notifyListeners();
-        yield analysisMsg.text ?? '';
+        final analysisText = analysisMsg.text ?? '';
+        // Yield the analysis text
+        yield analysisText;
+        // Convert analysis text to speech using TTS service
+        try {
+          final ttsResult = await TtsService.synthesize(analysisText);
+          // Yield the TTS JSON response as a string
+          yield jsonEncode(ttsResult);
+          // Play the synthesized speech
+          try {
+            final audioBase64 = ttsResult['audio'] as String;
+            final audioBytes = base64Decode(audioBase64);
+            final player = AudioPlayer();
+            await player.play(BytesSource(audioBytes));
+          } catch (e) {
+            debugPrint('Audio playback failed: $e');
+          }
+        } catch (e) {
+          debugPrint('TTS failed: $e');
+        }
       } catch (e) {
         debugPrint('Analysis failed: $e');
         // Remove placeholder on failure

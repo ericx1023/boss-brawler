@@ -52,7 +52,7 @@ class _ChatPageState extends State<ChatPage>
 
   void reset() {
     _provider = GeminiProvider(
-      model: GenerativeModel(model: 'gemini-2.5-pro-exp-03-25', apiKey: geminiApiKey),
+      model: GenerativeModel(model: 'gemini-2.0-flash', apiKey: geminiApiKey),
     );
     _controller.value = 1.0;
     _controller.reverse();

@@ -53,7 +53,7 @@ class _ChatPageState extends State<ChatPage> { // State class
     super.initState();
     // Initialize the model and managers
     _model = FirebaseVertexAI.instance.generativeModel(
-      model: 'gemini-2.5-pro-exp-03-25',
+      model: 'gemini-2.0-flash',
       // Location might need to be configured differently or might use a default
       systemInstruction: Content.system(negotiationCoachSystemPrompt), // Add system instruction here
     );

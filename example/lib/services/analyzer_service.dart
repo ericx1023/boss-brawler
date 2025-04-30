@@ -22,14 +22,14 @@ static const String _analysisSystemPrompt =
     "• Negoti-auction strategies\n"
     "• ‘No’-oriented questioning\n"
     "• Tribe-building methods\n\n"
-    "Then, based on that summary, conclude and identify improvement areas in a paragraph, "
+    "limit the analysis to 100 words, don not use any markdown formatting, just plain text, use friendly tone, use first person"
     "and finally provide a concrete example message that shows how to put these insights into practice.";
 
 
   AnalyzerService._internal() {
     _provider = GeminiProvider(
       model: GenerativeModel(
-        model: 'gemini-2.5-pro-exp-03-25',
+        model: 'gemini-2.0-flash',
         apiKey: geminiApiKey,
         systemInstruction: Content.system(_analysisSystemPrompt),
       ),

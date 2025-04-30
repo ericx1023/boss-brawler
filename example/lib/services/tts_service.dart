@@ -16,7 +16,9 @@ class TtsService {
         'Authorization': 'Bearer $huggingfaceApiKey',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'inputs': text}),
+      body: jsonEncode({
+        'text': text.replaceAll('\n', ' ').replaceAll('[ANALYSIS]: ', ''),
+      }),
     );
     debugPrint('TtsService: received response status ${response.statusCode}');
     if (response.statusCode != 200) {

@@ -1,28 +1,46 @@
-This is negotiation training app called ‘Boss Brawler' using flutter
-In the main page, it should have: 
-    - A chat section with a negotiation coach, 
-    - A context input field for user to provide context/situation to the coach,
-    - text / voice input to send messages to the coach,
-    - a hamburger menu icon to open a side panel with the following options:
-        - Home
-        - Chat Histories
-        - Progress Report
-        - Settings
-In a chat, follow the life cycle of a chat:
-	1. User Initial Input - 
-    2. Coach Response - 
-    3. User conter response 
-	4. AI analyze the counter response, provide Summary - good or bad - Improvement
-	5. User's Response Choice
-        1. contunie? -  goto 2 base on the summary,. 
-        2. end chat - End chat
-        3. provide more context - goto 1.
-        4. ask for clarification - goto 2.
+
+I want to build a negotiation app, where the user practices negotiation simulation with an ai model playing 3 roles
+1. as an opponent,
+2. as a coach,
+3. as a opposition scenario generator,
+
+user will first talks to a opposition scenario generator, then the opponant will give the user a scenario to choose, 
+Based on the user's input, the opposition scenario generator will generate four most common and relevant negotiation scenarios they might encounter. Each scenario should be a brief, clear title that captures a common obstacle or response they might face.
+
+opposition scenario generator response should:
+2. Include brief, descriptive titles that capture realistic scenarios
+3. Be tailored to the specific negotiation context mentioned by the user
+4. Cover different types of challenges the user might face
+5. Use natural, straightforward language
+
+For example, if a user mentions "I need a salary raise, but my boss is not willing to give me one", opposition scenario generator should return four specific negotiation scenarios like:
+1. The Boss Challenges Your Value
+2. The Boss Questions Your Performance
+3. The Boss Cites Budget Constraints
+4. The Boss Deflects to Company Policy
+
+
+If a user choose "The Boss Questions Your Performance", the opponant should:
+
+"""
+Play a role of a tough negotiation opponent to simulate real life negotiation situation. 
+Keep your responses concise and realistic. 
+You tend to reject the user, give a reason based on the selectedscenario and context.
+"""
+
+after the opponent's rejection, the user will input a message to convince the opponent, 
+the coach will give the user a analysis based on the user's message and the scenario.
+
+the coach's response should:
+3. Be tailored to the specific negotiation context mentioned by the user
+4. use the most advanced negotiation strategies and psychology (such as Chris Voss - never split the difference)
+5. Use positive, encouraging language
+
+and everytime the uesr input a message, the coach will continue to give the user a analysis based on the user's message and the context.
+Help me to analyze this app and features then generate the system prompt for the app.
+Ask me questions to clarify the requirements in order to  generate the best system prompt.
 
 
 Now play the role as engineer manager, help me think through the core features of implementing such app.
-
-
-
 
 

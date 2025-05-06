@@ -1,4 +1,5 @@
 import 'dart:async'; // Import async for StreamSubscription
+import 'dart:convert'; // for JSON decoding
 // Import dart:convert for JSON encoding
 
 import 'package:flutter/material.dart';
@@ -26,6 +27,26 @@ Keep your responses concise and realistic.
 You tend to reject the user, give a reason related to the context.
 """;
 
+const String scenarioPrompt = """
+Based on the user's initial input about a negotiation situation, generate an array of four most common and relevant negotiation scenarios they might encounter. Each scenario should be a brief, clear title that captures a common obstacle or response they might face.
+
+For example, if a user mentions "salary negotiation with boss", you should return an array of four specific negotiation scenarios like:
+["The Boss Challenges Your Value", "The Boss Questions Your Performance", "The Boss Cites Budget Constraints", "The Boss Deflects to Company Policy"]
+
+If a user mentions "negotiating with a client over project scope", you might return:
+["Client Requests Additional Features at Same Price", "Client Questions Your Rate Compared to Competitors", "Client Wants Faster Timeline Without Additional Resources", "Client Hesitates Due to Budget Limitations"]
+
+Your response should:
+1. Be formatted as a valid JSON array containing exactly 4 string elements
+2. Include brief, descriptive titles (3-8 words each) that capture realistic scenarios
+3. Be tailored to the specific negotiation context mentioned by the user
+4. Cover different types of challenges the user might face
+5. Use natural, straightforward language
+
+Return ONLY the JSON array with no additional text, explanations, or formatting.
+
+""";
+
 // Predefined Scenarios
 final List<String> predefinedScenarios = [
   "Salary and Compensation Discussions",
@@ -47,7 +68,11 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  final _initialController = TextEditingController();
   final _contextController = TextEditingController();
+  late final GeminiProvider _scenarioProvider;
+  bool _isFetchingScenarios = false;
+  List<String>? _fetchedScenarios;
   String? _selectedScenario;
 
   late final PromptBuilder _promptBuilder;
@@ -85,12 +110,63 @@ class _ChatPageState extends State<ChatPage> {
         context: _contextController.text.trim(),
       );
     });
+    // Initialize scenario provider for generating negotiation scenarios
+    _scenarioProvider = GeminiProvider(
+      model: GenerativeModel(
+        model: 'gemini-2.0-flash',
+        apiKey: geminiApiKey,
+        systemInstruction: Content.system(scenarioPrompt),
+      ),
+    );
+    // Listen to initial input changes to enable/disable button
+    _initialController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
     _contextController.dispose();
+    _initialController.dispose();
     super.dispose();
+  }
+
+  // Fetch negotiation scenarios based on initial user input
+  Future<void> _handleGenerateScenarios() async {
+    final input = _initialController.text.trim();
+    if (input.isEmpty) return;
+    setState(() {
+      _isFetchingScenarios = true;
+    });
+    try {
+      final buffer = StringBuffer();
+      await for (final chunk in _scenarioProvider.generateStream(input)) {
+        buffer.write(chunk);
+      }
+      final raw = buffer.toString();
+      // Extract JSON array between first '[' and last ']' to remove any markdown fences
+      String jsonString;
+      final startIdx = raw.indexOf('[');
+      final endIdx = raw.lastIndexOf(']');
+      if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+        jsonString = raw.substring(startIdx, endIdx + 1).trim();
+      } else {
+        jsonString = raw.trim();
+      }
+      final List<dynamic> decoded = json.decode(jsonString);
+      setState(() {
+        _fetchedScenarios = decoded.cast<String>();
+      });
+    } catch (e) {
+      debugPrint('Fetch scenarios failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to generate scenarios')),
+      );
+    } finally {
+      setState(() {
+        _isFetchingScenarios = false;
+      });
+    }
   }
 
   // Define the response builder function
@@ -109,46 +185,13 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-            },
+    Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: LlmChatView(
+          provider: GeminiProvider(
+            model: GenerativeModel(model: 'gemini-2.0-flash', apiKey: geminiApiKey),
           ),
-          title: const Text(App.title),
-        ),
-        body: Column(
-          children: [
-            ScenarioSelector(
-              scenarios: predefinedScenarios,
-              selectedScenario: _selectedScenario,
-              onScenarioChanged: (scenario) {
-                setState(() {
-                  _selectedScenario = scenario;
-                  _chatService.updatePrompt(
-                    scenario: scenario,
-                    context: _contextController.text.trim(),
-                  );
-                });
-              },
-              onContextChanged: (context) {
-                _chatService.updatePrompt(
-                  scenario: _selectedScenario,
-                  context: context,
-                );
-              },
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ChatView(
-                provider: _chatService.provider,
-                responseBuilder: _buildResponseWidget,
-                messageSender: _messageSenderService.sendMessage,
-              ),
-            ),
-          ],
         ),
       );
+
 } 

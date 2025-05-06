@@ -50,12 +50,17 @@ class ChatService {
     if (_historyListener != null) {
       provider.removeListener(_historyListener!);
     }
+    // Build the new system prompt including optional scenario and context
     final newPrompt = promptBuilder.buildPrompt(
       scenario: scenario,
       context: context,
     );
-    // Reinitialize provider with new prompt and reapply history
-    _initProvider(newPrompt);
+    // Create a fresh provider with the updated system prompt without reloading saved history
+    provider = _createProvider(newPrompt);
+    if (_historyListener != null) {
+      provider.addListener(_historyListener!);
+    }
+    // Reapply the existing history directly
     provider.history = history;
   }
 } 

@@ -55,17 +55,6 @@ class ScenarioSelector extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: 16),
-          if (selectedScenario != null)
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'Enter additional context to refine the scenario (optional)...',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12.0, vertical: 8.0),
-              ),
-              maxLines: 3,
-              onChanged: onContextChanged,
-            ),
         ],
       ),
     );

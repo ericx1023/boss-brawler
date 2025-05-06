@@ -14,9 +14,9 @@ class PromptBuilder {
         buffer.writeln("Selected Scenario: $scenario");
         if (context != null && context.isNotEmpty) buffer.write("\n");
       }
-      if (context != null && context.isNotEmpty) {
-        buffer.writeln("Additional Context Provided by User:\n$context");
-      }
+      // if (context != null && context.isNotEmpty) {
+      //   buffer.writeln("Additional Context Provided by User:\n$context");
+      // }
     }
     return buffer.toString().trim();
   }

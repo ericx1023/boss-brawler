@@ -1,0 +1,111 @@
+Project Requirements Document (PRD)
+Negotiation Training App
+Version: 1.0
+Date: 2023-06-XX
+Author: Your Team Name
+
+1. Purpose
+The purpose of this document is to define the requirements for the AI Negotiation Training App, an interactive web application that enables users to practice realistic negotiation scenarios and receive personalized coaching from AI-driven roles.
+
+2. Objectives
+- Provide a flexible scenario generator that creates diverse negotiation contexts.
+- Offer an AI opponent role that challenges the user with realistic resistance and professional tone.
+- Deliver an AI coach role that analyzes user and opponent messages and provides actionable insights.
+- Ensure seamless front-end orchestration and session management with clear win conditions.
+
+3. Scope
+In Scope:
+- Web-based chat interface supporting scenario selection and interactive negotiation.
+- Three AI roles implemented via separate endpoints: Scenario Generator, Opponent, Coach.
+- Session state persistence including scenario context, message history, and coaching ledger.
+- Win detection logic using user action or heuristics on opponent messages.
+Out of Scope:
+- Human-to-human matchmaking.
+- External integrations beyond core chat and AI prompt orchestration.
+
+4. Roles and Personas
+4.1 Scenario Generator
+  - Input: User-provided negotiation context.
+  - Behavior: Generate exactly four scenario titles, each 3-8 words, covering distinct challenge types.
+  - Output: Four plain text titles, one per line.
+4.2 Opponent
+  - Input: Selected scenario title, context summary, and latest user message.
+  - Behavior: Respond in 1–3 crisp sentences, default stance resist or reject user ask with plausible reason. Professional tone, optional mild sarcasm, no insults.
+  - Output: Single response per call.
+4.3 Coach
+  - Input: Scenario title, last opponent message, last user message, coaching ledger of prior tips.
+  - Behavior: Provide up to five bullet-point insights (emotional signals, tactical empathy, advanced tactics), under 150 words total. End with a short motivational line starting with Next move 👉.
+  - Output: Coaching advice as bullet points.
+
+5. Functional Requirements
+5.1 Scenario Creation Interface
+  - Text input for negotiation context.
+  - Button to submit and fetch scenario titles.
+  - Display four scenario title buttons.
+5.2 Negotiation Chat Interface
+  - Panel to show chat between user and Opponent.
+  - Text input for user messages.
+  - Send button triggers Opponent response then Coach feedback.
+  - Display coaching advice in separate panel.
+5.3 Coaching Ledger
+  - Append each coaching bullet as one-line digest.
+  - Include ledger in subsequent Coach prompt.
+5.4 Session Management
+  - Store scenario title, context summary, message history, ledger.
+  - Persist state across page reloads (local storage or backend).
+5.5 Win Detection
+  - Recognize user pressing Win button or opponent concession keywords (agree, deal).
+  - End session after win or 20 turns.
+
+6. Prompt Architecture
+6.1 Separate Prompts for Each Role
+  - Use minimal focused system prompts per role (Option B).
+  - Backend orchestrates which prompt to call for each AI turn.
+6.2 Shared Guidelines
+  - Safety: no illegal or discriminatory content, no profanity or insults.
+  - Word limits: single turn ≤250 words.
+  - Turn caps: max 20 user turns.
+  - Memory: include compact ledger for Coach.
+  - JSON sandbox: return plain text only.
+6.3 System Prompt Samples
+  - See Appendix A for production-ready prompts based on prompt_structure.txt.
+
+7. Non-Functional Requirements
+7.1 Performance and Latency
+  - Opponent and Coach responses <2 seconds.
+7.2 Security and Compliance
+  - Sanitize user input, enforce content policy.
+7.3 Scalability
+  - Modular prompt design to support model upgrades.
+7.4 Localization
+  - Wrap dynamic text in i18n pipeline.
+7.5 Cost Optimization
+  - Minimize token usage by compact summaries and ledgers.
+
+8. Technical Architecture
+8.1 Front-End
+  - flutter chat interface with scenario selector and coaching panel.
+8.2 Back-End Services
+  - Three API endpoints (scenario-generator, opponent, coach).
+8.3 Data Storage
+  - Session state in Redis or browser storage.
+8.4 Orchestration Logic
+  - Router to dispatch messages to appropriate AI role.
+
+9. Testing and QA
+9.1 Unit Tests
+  - Test each prompt with edge cases (no context, offensive text).
+9.2 Integration Tests
+  - Validate end-to-end session flow.
+9.3 Safety Tests
+  - Ensure content policy compliance.
+
+10. Future Enhancements
+- Human opponent mode.
+- Video role-play support.
+- Advanced analytics dashboard.
+
+Appendix A: Sample System Prompts
+- Scenario Generator prompt
+- Opponent prompt
+- Coach prompt

@@ -68,8 +68,6 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final _initialController = TextEditingController();
-  final _contextController = TextEditingController();
   late final GeminiProvider _scenarioProvider;
   bool _isFetchingScenarios = false;
   List<String>? _fetchedScenarios;
@@ -103,13 +101,6 @@ class _ChatPageState extends State<ChatPage> {
         }
       });
     }
-    // Update prompt when context changes
-    _contextController.addListener(() {
-      _chatService.updatePrompt(
-        scenario: _selectedScenario,
-        context: _contextController.text.trim(),
-      );
-    });
     // Initialize scenario provider for generating negotiation scenarios
     _scenarioProvider = GeminiProvider(
       model: GenerativeModel(
@@ -118,22 +109,21 @@ class _ChatPageState extends State<ChatPage> {
         systemInstruction: Content.system(scenarioPrompt),
       ),
     );
-    // Listen to initial input changes to enable/disable button
-    _initialController.addListener(() {
-      setState(() {});
-    });
   }
 
   @override
   void dispose() {
-    _contextController.dispose();
-    _initialController.dispose();
+    // No contextController to dispose
     super.dispose();
   }
 
   // Fetch negotiation scenarios based on initial user input
   Future<void> _handleGenerateScenarios() async {
-    final input = _initialController.text.trim();
+    // Get last user message from chat history as context
+    final history = _chatService.provider.history;
+    final userMsgs = history.where((m) => m.origin.isUser).toList();
+    if (userMsgs.isEmpty) return;
+    final input = userMsgs.last.text?.trim() ?? '';
     if (input.isEmpty) return;
     setState(() {
       _isFetchingScenarios = true;
@@ -185,13 +175,52 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   @override
-    Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text(App.title)),
-        body: LlmChatView(
-          provider: GeminiProvider(
-            model: GenerativeModel(model: 'gemini-2.0-flash', apiKey: geminiApiKey),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text(App.title)),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: _isFetchingScenarios ? null : _handleGenerateScenarios,
+              child: _isFetchingScenarios
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Generate Scenarios'),
+            ),
           ),
-        ),
-      );
-
+          if (_fetchedScenarios != null)
+            ScenarioSelector(
+              scenarios: _fetchedScenarios!,
+              selectedScenario: _selectedScenario,
+              onScenarioChanged: (scenario) {
+                setState(() {
+                  _selectedScenario = scenario;
+                  // update system prompt with selected scenario and last user context
+                  final history = _chatService.provider.history;
+                  final userMsgs = history.where((m) => m.origin.isUser).toList();
+                  final contextInput = userMsgs.last.text?.trim() ?? '';
+                  _chatService.updatePrompt(
+                    scenario: _selectedScenario,
+                    context: contextInput,
+                  );
+                });
+              },
+              onContextChanged: (_) {},
+            ),
+          Expanded(
+            child: ChatView(
+              provider: _chatService.provider,
+              responseBuilder: _buildResponseWidget,
+              messageSender: _messageSenderService.sendMessage,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 } 

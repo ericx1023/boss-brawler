@@ -77,6 +77,8 @@ class _ChatPageState extends State<ChatPage> {
   late final ChatService _chatService;
   late final MessageSenderService _messageSenderService;
   late final AnalysisService _analysisService;
+  // store pending user prompt until scenario is chosen
+  String? _pendingPrompt;
 
   @override
   void initState() {
@@ -118,12 +120,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   // Fetch negotiation scenarios based on initial user input
-  Future<void> _handleGenerateScenarios() async {
-    // Get last user message from chat history as context
-    final history = _chatService.provider.history;
-    final userMsgs = history.where((m) => m.origin.isUser).toList();
-    if (userMsgs.isEmpty) return;
-    final input = userMsgs.last.text?.trim() ?? '';
+  Future<void> _handleGenerateScenarios(String prompt) async {
+    // Use the passed prompt directly as input for scenario generation
+    final input = prompt.trim();
     if (input.isEmpty) return;
     setState(() {
       _isFetchingScenarios = true;
@@ -145,7 +144,7 @@ class _ChatPageState extends State<ChatPage> {
       }
       final List<dynamic> decoded = json.decode(jsonString);
       setState(() {
-        _fetchedScenarios = decoded.cast<String>();
+        _fetchedScenarios = [...decoded.cast<String>(), 'Skip'];
       });
     } catch (e) {
       debugPrint('Fetch scenarios failed: $e');
@@ -174,41 +173,40 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  // initial send: record prompt, show scenario options, do not send to LLM yet
+  Stream<String> _wrappedMessageSender(String prompt, {Iterable<Attachment> attachments = const []}) async* {
+    setState(() { _pendingPrompt = prompt; });
+    final userMsg = ChatMessage.user(prompt, attachments);
+    final hist = _chatService.provider.history;
+    _chatService.provider.history = [...hist, userMsg];
+    _chatService.provider.notifyListeners();
+    await _handleGenerateScenarios(prompt);
+    // no further yields; wait for scenario selection
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text(App.title)),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: _isFetchingScenarios ? null : _handleGenerateScenarios,
-              child: _isFetchingScenarios
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Generate Scenarios'),
-            ),
-          ),
+          // Scenario selection appears when fetched
           if (_fetchedScenarios != null)
             ScenarioSelector(
               scenarios: _fetchedScenarios!,
               selectedScenario: _selectedScenario,
               onScenarioChanged: (scenario) {
+                final combined = scenario?.toLowerCase() == 'skip'
+                    ? (_pendingPrompt ?? '')
+                    : '[$scenario] ${_pendingPrompt ?? ''}';
+                // clear selectors and pending state
                 setState(() {
-                  _selectedScenario = scenario;
-                  // update system prompt with selected scenario and last user context
-                  final history = _chatService.provider.history;
-                  final userMsgs = history.where((m) => m.origin.isUser).toList();
-                  final contextInput = userMsgs.last.text?.trim() ?? '';
-                  _chatService.updatePrompt(
-                    scenario: _selectedScenario,
-                    context: contextInput,
-                  );
+                  _fetchedScenarios = null;
+                  _selectedScenario = null;
+                  _pendingPrompt = null;
                 });
+                // send combined prompt to negotiation LLM
+                _sendCombinedPrompt(combined);
               },
               onContextChanged: (_) {},
             ),
@@ -216,11 +214,16 @@ class _ChatPageState extends State<ChatPage> {
             child: ChatView(
               provider: _chatService.provider,
               responseBuilder: _buildResponseWidget,
-              messageSender: _messageSenderService.sendMessage,
+              messageSender: _wrappedMessageSender,
             ),
           ),
         ],
       ),
     );
+  }
+
+  // helper to send prompt (with scenario) to negotiation LLM
+  void _sendCombinedPrompt(String prompt, {Iterable<Attachment> attachments = const []}) {
+    _messageSenderService.sendMessage(prompt, attachments: attachments).listen((_) {});
   }
 } 

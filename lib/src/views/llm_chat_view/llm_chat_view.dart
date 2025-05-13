@@ -76,6 +76,7 @@ class LlmChatView extends StatefulWidget {
   ///   during a chat operation. Defaults to 'ERROR'.
   /// - [enableAttachments]: Optional. Whether to enable file and image attachments in the chat input.
   /// - [enableVoiceNotes]: Optional. Whether to enable voice notes in the chat input.
+  /// - [afterUserMessageBuilder]: Optional. A builder to render a widget below the last user message in the chat history.
   LlmChatView({
     required LlmProvider provider,
     LlmChatViewStyle? style,
@@ -89,6 +90,7 @@ class LlmChatView extends StatefulWidget {
     this.errorMessage = 'ERROR',
     this.enableAttachments = true,
     this.enableVoiceNotes = true,
+    this.afterUserMessageBuilder,
     super.key,
   }) : viewModel = ChatViewModel(
          provider: provider,
@@ -141,6 +143,9 @@ class LlmChatView extends StatefulWidget {
   /// Defaults to 'ERROR'.
   final String errorMessage;
 
+  /// Builder to render a widget below the last user message in the chat history.
+  final Widget Function(BuildContext context, ChatMessage message)? afterUserMessageBuilder;
+
   @override
   State<LlmChatView> createState() => _LlmChatViewState();
 }
@@ -190,14 +195,11 @@ class _LlmChatViewState extends State<LlmChatView>
                       child: Stack(
                         children: [
                           ChatHistoryView(
-                            // can only edit if we're not waiting on the LLM or if
-                            // we're not already editing an LLM response
-                            onEditMessage:
-                                _pendingPromptResponse == null &&
-                                        _associatedResponse == null
-                                    ? _onEditMessage
-                                    : null,
+                            onEditMessage: _pendingPromptResponse == null && _associatedResponse == null
+                                ? _onEditMessage
+                                : null,
                             onSelectSuggestion: _onSelectSuggestion,
+                            afterUserMessageBuilder: widget.afterUserMessageBuilder,
                           ),
                         ],
                       ),

@@ -31,11 +31,7 @@ class MessageSenderService {
       return;
     }
 
-    // Step 1: Add the user message to history
-    final userMsg = ChatMessage.user(prompt, attachments);
-    provider.history = [...provider.history, userMsg];
-    provider.notifyListeners();
-
+    // Step 1: User message is already added in ChatPage._wrappedMessageSender
     // Step 2: Only perform analysis if user has sent >= 2 messages
     final userMessageCount = provider.history.where((msg) => msg.origin.isUser).length;
     if (userMessageCount >= 2) {
@@ -51,22 +47,22 @@ class MessageSenderService {
         // Yield the analysis text
         yield analysisText;
         // Convert analysis text to speech using TTS service
-        try {
-          final ttsResult = await TtsService.synthesize(analysisText);
-          // Yield the TTS JSON response as a string
-          yield jsonEncode(ttsResult);
-          // Play the synthesized speech
-          try {
-            final audioBase64 = ttsResult['audio'] as String;
-            final audioBytes = base64Decode(audioBase64);
-            final player = AudioPlayer();
-            await player.play(BytesSource(audioBytes));
-          } catch (e) {
-            debugPrint('Audio playback failed: $e');
-          }
-        } catch (e) {
-          debugPrint('TTS failed: $e');
-        }
+        // try {
+        //   final ttsResult = await TtsService.synthesize(analysisText);
+        //   // Yield the TTS JSON response as a string
+        //   yield jsonEncode(ttsResult);
+        //   // Play the synthesized speech
+        //   try {
+        //     final audioBase64 = ttsResult['audio'] as String;
+        //     final audioBytes = base64Decode(audioBase64);
+        //     final player = AudioPlayer();
+        //     await player.play(BytesSource(audioBytes));
+        //   } catch (e) {
+        //     debugPrint('Audio playback failed: $e');
+        //   }
+        // } catch (e) {
+        //   debugPrint('TTS failed: $e');
+        // }
       } catch (e) {
         debugPrint('Analysis failed: $e');
         // Remove placeholder on failure

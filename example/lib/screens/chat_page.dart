@@ -175,13 +175,22 @@ class _ChatPageState extends State<ChatPage> {
 
   // initial send: record prompt, show scenario options, do not send to LLM yet
   Stream<String> _wrappedMessageSender(String prompt, {Iterable<Attachment> attachments = const []}) async* {
-    setState(() { _pendingPrompt = prompt; });
     final userMsg = ChatMessage.user(prompt, attachments);
     final hist = _chatService.provider.history;
-    _chatService.provider.history = [...hist, userMsg];
-    _chatService.provider.notifyListeners();
-    await _handleGenerateScenarios(prompt);
-    // no further yields; wait for scenario selection
+
+    // Check if this is the very first message
+    if (hist.isEmpty) {
+      setState(() { _pendingPrompt = prompt; });
+      _chatService.provider.history = [...hist, userMsg];
+      _chatService.provider.notifyListeners();
+      await _handleGenerateScenarios(prompt);
+      // no further yields; wait for scenario selection
+    } else {
+      // For subsequent messages, add to history and send directly
+      _chatService.provider.history = [...hist, userMsg];
+      _chatService.provider.notifyListeners();
+      yield* _messageSenderService.sendMessage(prompt, attachments: attachments);
+    }
   }
 
   @override
@@ -190,31 +199,33 @@ class _ChatPageState extends State<ChatPage> {
       appBar: AppBar(title: const Text(App.title)),
       body: Column(
         children: [
-          // Scenario selection appears when fetched
-          if (_fetchedScenarios != null)
-            ScenarioSelector(
-              scenarios: _fetchedScenarios!,
-              selectedScenario: _selectedScenario,
-              onScenarioChanged: (scenario) {
-                final combined = scenario?.toLowerCase() == 'skip'
-                    ? (_pendingPrompt ?? '')
-                    : '[$scenario] ${_pendingPrompt ?? ''}';
-                // clear selectors and pending state
-                setState(() {
-                  _fetchedScenarios = null;
-                  _selectedScenario = null;
-                  _pendingPrompt = null;
-                });
-                // send combined prompt to negotiation LLM
-                _sendCombinedPrompt(combined);
-              },
-              onContextChanged: (_) {},
-            ),
           Expanded(
             child: ChatView(
               provider: _chatService.provider,
               responseBuilder: _buildResponseWidget,
               messageSender: _wrappedMessageSender,
+              afterUserMessageBuilder: (context, message) {
+                // show scenario selector under the matching user message
+                if (_fetchedScenarios != null && message.text == _pendingPrompt) {
+                  return ScenarioSelector(
+                    scenarios: _fetchedScenarios!,
+                    selectedScenario: _selectedScenario,
+                    onScenarioChanged: (scenario) {
+                      final combined = scenario?.toLowerCase() == 'skip'
+                          ? (_pendingPrompt ?? '')
+                          : '[$scenario] ${_pendingPrompt ?? ''}';
+                      setState(() {
+                        _fetchedScenarios = null;
+                        _selectedScenario = null;
+                        _pendingPrompt = null;
+                      });
+                      _sendCombinedPrompt(combined);
+                    },
+                    onContextChanged: (_) {},
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ),
         ],

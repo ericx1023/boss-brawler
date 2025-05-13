@@ -27,6 +27,7 @@ class ChatHistoryView extends StatefulWidget {
   const ChatHistoryView({
     this.onEditMessage,
     required this.onSelectSuggestion,
+    this.afterUserMessageBuilder,
     super.key,
   });
 
@@ -40,6 +41,9 @@ class ChatHistoryView extends StatefulWidget {
 
   /// The callback function to call when a suggestion is selected.
   final void Function(String suggestion) onSelectSuggestion;
+
+  /// Builder to render a widget under the last user message.
+  final Widget Function(BuildContext context, ChatMessage message)? afterUserMessageBuilder;
 
   @override
   State<ChatHistoryView> createState() => _ChatHistoryViewState();
@@ -85,21 +89,32 @@ class _ChatHistoryViewState extends State<ChatHistoryView> {
             final canEdit = isLastUserMessage && widget.onEditMessage != null;
             final isUser = message.origin.isUser;
 
+            if (isUser && isLastUserMessage && widget.afterUserMessageBuilder != null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: UserMessageView(
+                      message,
+                      onEdit: canEdit ? () => widget.onEditMessage?.call(message) : null,
+                    ),
+                  ),
+                  widget.afterUserMessageBuilder!(context, message),
+                ],
+              );
+            }
             return Padding(
               padding: const EdgeInsets.only(top: 6),
-              child:
-                  isUser
-                      ? UserMessageView(
-                        message,
-                        onEdit:
-                            canEdit
-                                ? () => widget.onEditMessage?.call(message)
-                                : null,
-                      )
-                      : LlmMessageView(
-                        message,
-                        isWelcomeMessage: messageIndex == 0,
-                      ),
+              child: isUser
+                  ? UserMessageView(
+                      message,
+                      onEdit: canEdit ? () => widget.onEditMessage?.call(message) : null,
+                    )
+                  : LlmMessageView(
+                      message,
+                      isWelcomeMessage: messageIndex == 0,
+                    ),
             );
           },
         );

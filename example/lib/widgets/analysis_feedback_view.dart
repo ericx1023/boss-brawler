@@ -12,7 +12,9 @@ class AnalysisFeedbackView extends StatelessWidget {
     // For now, just display the raw analysis content.
     // We will enhance this later to show structured feedback.
     return Card(
+      color: Color(0xFF4A4B3A), // Dark olive-grey
       margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)), // Optional: match bubble radius
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -20,10 +22,16 @@ class AnalysisFeedbackView extends StatelessWidget {
           children: [
             Text(
               'Analysis Feedback:', // Title for the card
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Ensure title text is white
+              ),
             ),
             const SizedBox(height: 8.0),
-            Text(analysisContent), // Display the analysis content
+            Text(
+              analysisContent, // Display the analysis content
+              style: TextStyle(color: Colors.white), // Ensure content text is white
+            ),
           ],
         ),
       ),

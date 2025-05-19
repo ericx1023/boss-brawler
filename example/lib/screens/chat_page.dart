@@ -169,6 +169,16 @@ class _ChatPageState extends State<ChatPage> {
       return MarkdownBody(
         data: message,
         selectable: true, // Allow text selection
+        styleSheet: MarkdownStyleSheet(
+          p: TextStyle(color: Colors.white), // Set default text color to white
+          // You can add more specific styles here if needed for other markdown elements
+          // For example, h1, h2, strong, em, etc.
+          // strong: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          // em: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
+          // listBullet: TextStyle(color: Colors.white),
+          // blockquoteDecoration: BoxDecoration(color: Color(0xFF2C2C2E), borderRadius: BorderRadius.circular(4)),
+          // blockquotePadding: EdgeInsets.all(8),
+        ),
       );
     }
   }
@@ -196,7 +206,12 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(App.title)),
+      // backgroundColor: Colors.black, // Removed, should be inherited from ThemeData
+      appBar: AppBar(
+        title: const Text(App.title, style: TextStyle(color: Colors.white)), // AppBar title white
+        backgroundColor: Color(0xFF2C2C2E), // Dark grey AppBar background
+        iconTheme: IconThemeData(color: Colors.white), // Ensure back button or other icons are white
+      ),
       body: Column(
         children: [
           Expanded(

@@ -32,7 +32,20 @@ class MessageSenderService {
     }
 
     // Step 1: User message is already added in ChatPage._wrappedMessageSender
-    // Step 2: Only perform analysis if user has sent >= 2 messages
+
+    // Step 2: Send to negotiation LLM and stream response
+    // Add placeholder for LLM response
+    final llmPlaceholder = ChatMessage.llm();
+    provider.history = [...provider.history, llmPlaceholder];
+    provider.notifyListeners();
+    // Use generateStream to avoid duplicating user message in history
+    await for (final chunk in provider.generateStream(prompt, attachments: attachments)) {
+      llmPlaceholder.append(chunk);
+      yield chunk;
+    }
+    provider.notifyListeners();
+
+    // Step 3: After LLM response, perform analysis if user has sent >= 2 messages
     final userMessageCount = provider.history.where((msg) => msg.origin.isUser).length;
     if (userMessageCount >= 2) {
       // Add a placeholder for analysis feedback
@@ -70,18 +83,5 @@ class MessageSenderService {
         provider.notifyListeners();
       }
     }
-
-    // Step 3: After analysis, send to negotiation LLM and stream response
-    debugPrint('Sending message to negotiation LLM: $prompt');
-    // Add placeholder for LLM response
-    final llmPlaceholder = ChatMessage.llm();
-    provider.history = [...provider.history, llmPlaceholder];
-    provider.notifyListeners();
-    // Use generateStream to avoid duplicating user message in history
-    await for (final chunk in provider.generateStream(prompt, attachments: attachments)) {
-      llmPlaceholder.append(chunk);
-      yield chunk;
-    }
-    provider.notifyListeners();
   }
 } 

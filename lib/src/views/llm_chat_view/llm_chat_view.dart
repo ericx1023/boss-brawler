@@ -77,6 +77,7 @@ class LlmChatView extends StatefulWidget {
   /// - [enableAttachments]: Optional. Whether to enable file and image attachments in the chat input.
   /// - [enableVoiceNotes]: Optional. Whether to enable voice notes in the chat input.
   /// - [afterUserMessageBuilder]: Optional. A builder to render a widget below the last user message in the chat history.
+  /// - [analysisMessageBuilder]: Optional. A builder to render a custom widget for analysis messages.
   LlmChatView({
     required LlmProvider provider,
     LlmChatViewStyle? style,
@@ -91,6 +92,7 @@ class LlmChatView extends StatefulWidget {
     this.enableAttachments = true,
     this.enableVoiceNotes = true,
     this.afterUserMessageBuilder,
+    this.analysisMessageBuilder,
     super.key,
   }) : viewModel = ChatViewModel(
          provider: provider,
@@ -146,6 +148,9 @@ class LlmChatView extends StatefulWidget {
   /// Builder to render a widget below the last user message in the chat history.
   final Widget Function(BuildContext context, ChatMessage message)? afterUserMessageBuilder;
 
+  /// Builder to render a custom widget for analysis messages.
+  final Widget Function(BuildContext context, ChatMessage message)? analysisMessageBuilder;
+
   @override
   State<LlmChatView> createState() => _LlmChatViewState();
 }
@@ -200,6 +205,7 @@ class _LlmChatViewState extends State<LlmChatView>
                                 : null,
                             onSelectSuggestion: _onSelectSuggestion,
                             afterUserMessageBuilder: widget.afterUserMessageBuilder,
+                            analysisMessageBuilder: widget.analysisMessageBuilder,
                           ),
                         ],
                       ),

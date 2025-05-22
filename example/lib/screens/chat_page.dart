@@ -56,6 +56,8 @@ final List<String> predefinedScenarios = [
   "User Customized", // Added User Customized scenario
 ];
 
+const String _analysisMarker = '[ANALYSIS]:'; // Define the marker
+
 // Convert to StatefulWidget
 class ChatPage extends StatefulWidget {
   /// Optional UUID to load specific chat session
@@ -160,27 +162,27 @@ class _ChatPageState extends State<ChatPage> {
 
   // Define the response builder function
   Widget _buildResponseWidget(BuildContext context, String message) {
-    const analysisMarker = '[ANALYSIS]:';
-    if (message.startsWith(analysisMarker)) {
-      final analysisContent = message.substring(analysisMarker.length).trim();
-      return AnalysisFeedbackView(analysisContent: analysisContent);
-    } else {
-      // Default rendering using MarkdownBody
-      return MarkdownBody(
-        data: message,
-        selectable: true, // Allow text selection
-        styleSheet: MarkdownStyleSheet(
-          p: TextStyle(color: Colors.white), // Set default text color to white
-          // You can add more specific styles here if needed for other markdown elements
-          // For example, h1, h2, strong, em, etc.
-          // strong: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          // em: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
-          // listBullet: TextStyle(color: Colors.white),
-          // blockquoteDecoration: BoxDecoration(color: Color(0xFF2C2C2E), borderRadius: BorderRadius.circular(4)),
-          // blockquotePadding: EdgeInsets.all(8),
-        ),
-      );
-    }
+    // const analysisMarker = '[ANALYSIS]:'; // Already defined globally or can be passed if needed
+    // No longer need to check for analysisMarker here as ChatHistoryView will use its own builder
+    // if (message.startsWith(analysisMarker)) {
+    //   final analysisContent = message.substring(analysisMarker.length).trim();
+    //   return AnalysisFeedbackView(analysisContent: analysisContent); 
+    // }
+    // Default rendering using MarkdownBody
+    return MarkdownBody(
+      data: message,
+      selectable: true, // Allow text selection
+      styleSheet: MarkdownStyleSheet(
+        p: TextStyle(color: Colors.white), // Set default text color to white
+        // You can add more specific styles here if needed for other markdown elements
+        // For example, h1, h2, strong, em, etc.
+        // strong: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        // em: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
+        // listBullet: TextStyle(color: Colors.white),
+        // blockquoteDecoration: BoxDecoration(color: Color(0xFF2C2C2E), borderRadius: BorderRadius.circular(4)),
+        // blockquotePadding: EdgeInsets.all(8),
+      ),
+    );
   }
 
   // initial send: record prompt, show scenario options, do not send to LLM yet
@@ -219,6 +221,11 @@ class _ChatPageState extends State<ChatPage> {
               provider: _chatService.provider,
               responseBuilder: _buildResponseWidget,
               messageSender: _wrappedMessageSender,
+              analysisMessageBuilder: (context, message) { // Provide the analysisMessageBuilder
+                // Ensure message.text is not null before using substring
+                final analysisContent = message.text?.substring(_analysisMarker.length).trim() ?? '';
+                return AnalysisFeedbackView(analysisContent: analysisContent);
+              },
               afterUserMessageBuilder: (context, message) {
                 // show scenario selector under the matching user message
                 if (_fetchedScenarios != null && message.text == _pendingPrompt) {

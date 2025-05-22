@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class ChatView extends StatelessWidget {
   final GeminiProvider provider;
@@ -11,12 +12,17 @@ class ChatView extends StatelessWidget {
   final Widget Function(BuildContext context, ChatMessage message)?
   afterUserMessageBuilder;
 
+  /// Builder to render a custom widget for analysis messages.
+  final Widget Function(BuildContext context, ChatMessage message)?
+  analysisMessageBuilder;
+
   const ChatView({
     Key? key,
     required this.provider,
     required this.responseBuilder,
     required this.messageSender,
     this.afterUserMessageBuilder,
+    this.analysisMessageBuilder,
   }) : super(key: key);
 
   @override
@@ -29,10 +35,14 @@ class ChatView extends StatelessWidget {
 
         // Customize user message bubbles
         userMessageStyle: UserMessageStyle(
-          textStyle: TextStyle(color: Colors.white),
+          textStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 17.0,
+            height: 1.5,
+          ),
           decoration: BoxDecoration(
             color: Color(0xFF007AFF),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
 
@@ -42,7 +52,25 @@ class ChatView extends StatelessWidget {
           iconColor: Colors.white70,
           decoration: BoxDecoration(
             color: Color(0xFF2C2C2E),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          markdownStyle: MarkdownStyleSheet(
+            p: TextStyle(
+              color: Colors.white,
+              fontSize: 17.0,
+              height: 1.5,
+            ),
+            em: TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
+            strong: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            listBullet: TextStyle(color: Colors.white),
+            code: TextStyle(
+              backgroundColor: Colors.grey[800],
+              color: Colors.white,
+              fontFamily: 'monospace',
+              fontSize: 16.0,
+              height: 1.5,
+            ),
+            blockquote: TextStyle(color: Colors.grey[300]),
           ),
         ),
 
@@ -58,6 +86,7 @@ class ChatView extends StatelessWidget {
       responseBuilder: responseBuilder,
       messageSender: messageSender,
       afterUserMessageBuilder: afterUserMessageBuilder,
+      analysisMessageBuilder: analysisMessageBuilder,
     );
   }
 }

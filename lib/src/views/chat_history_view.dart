@@ -11,6 +11,8 @@ import '../providers/interface/chat_message.dart';
 import '../providers/interface/message_origin.dart';
 import 'chat_message_view/llm_message_view.dart';
 import 'chat_message_view/user_message_view.dart';
+// TODO: Consider making this marker configurable or passed in
+const String _analysisMarker = '[ANALYSIS]:';
 
 /// A widget that displays a history of chat messages.
 ///
@@ -28,6 +30,7 @@ class ChatHistoryView extends StatefulWidget {
     this.onEditMessage,
     required this.onSelectSuggestion,
     this.afterUserMessageBuilder,
+    this.analysisMessageBuilder,
     super.key,
   });
 
@@ -44,6 +47,9 @@ class ChatHistoryView extends StatefulWidget {
 
   /// Builder to render a widget under the last user message.
   final Widget Function(BuildContext context, ChatMessage message)? afterUserMessageBuilder;
+
+  /// Builder to render a custom widget for analysis messages.
+  final Widget Function(BuildContext context, ChatMessage message)? analysisMessageBuilder;
 
   @override
   State<ChatHistoryView> createState() => _ChatHistoryViewState();
@@ -88,6 +94,13 @@ class _ChatHistoryViewState extends State<ChatHistoryView> {
                 message.origin.isUser && messageIndex >= history.length - 2;
             final canEdit = isLastUserMessage && widget.onEditMessage != null;
             final isUser = message.origin.isUser;
+
+            // Check for analysis message and use builder if available
+            if (widget.analysisMessageBuilder != null &&
+                message.origin.isLlm &&
+                message.text?.startsWith(_analysisMarker) == true) {
+              return widget.analysisMessageBuilder!(context, message);
+            }
 
             if (isUser && isLastUserMessage && widget.afterUserMessageBuilder != null) {
               return Column(

@@ -32,11 +32,12 @@ class ScenarioSelector extends StatelessWidget {
             children: scenarios.map((scenario) {
               final selected = selectedScenario == scenario;
               return ChoiceChip(
-                label: Text(scenario),
+                label: Text(scenario, softWrap: true, overflow: TextOverflow.visible),
                 selected: selected,
                 onSelected: (newSelected) {
                   onScenarioChanged(newSelected ? scenario : null);
                 },
+                labelPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 selectedColor: Theme.of(context).colorScheme.primaryContainer,
                 labelStyle: TextStyle(
                   color: selected

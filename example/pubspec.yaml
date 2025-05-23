@@ -1,6 +1,6 @@
-name: flutter_ai_toolkit_example
+name: boss_brawler
 description: >-
-  Sample apps showing off various features of the Flutter AI Toolkit.
+  Train your negotiation skills to become a master deal-maker in any situation. Boss Brawler puts you in realistic, high-stakes bargaining scenarios—whether you’re haggling over a salary, closing a major sales contract, or settling a dispute between teams.
 publish_to: none
 version: 0.0.1+1
 environment:
@@ -39,6 +39,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   mockito: ^5.4.4
   build_runner: ^2.4.10
+  flutter_launcher_icons: "^0.14.3"
 
 flutter:
   uses-material-design: true
@@ -46,3 +47,9 @@ flutter:
     - assets/
     - assets/recipes_default.json
     - assets/halloween-bg.png
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.jpeg"
+

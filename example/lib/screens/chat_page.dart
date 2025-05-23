@@ -4,17 +4,17 @@ import 'dart:convert'; // for JSON decoding
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_markdown/flutter_markdown.dart'; // Import flutter_markdown
 // Import for platform checking
 
 import '../main.dart'; // For App.title
-import '../../gemini_api_key.dart'; // Adjusted path for api key
 import '../widgets/analysis_feedback_view.dart'; // Import the new widget
 import '../widgets/scenario_selector.dart';
 import '../widgets/chat_view.dart';
+import '../services/ai_config.dart';
 import '../services/prompt_builder.dart';
 import '../services/chat_service.dart';
+import '../services/stt_service.dart';
 import '../services/message_sender_service.dart';
 import '../services/chat_history_service.dart';
 import '../services/analysis_service.dart';
@@ -77,6 +77,7 @@ class _ChatPageState extends State<ChatPage> {
 
   late final PromptBuilder _promptBuilder;
   late final ChatService _chatService;
+  late final SttService _sttService;
   late final MessageSenderService _messageSenderService;
   late final AnalysisService _analysisService;
   // store pending user prompt until scenario is chosen
@@ -90,6 +91,7 @@ class _ChatPageState extends State<ChatPage> {
       promptBuilder: _promptBuilder,
       historyService: ChatHistoryService(),
     );
+    _sttService = SttService();
     _analysisService = AnalysisService();
     _messageSenderService = MessageSenderService(
       chatService: _chatService,
@@ -107,17 +109,14 @@ class _ChatPageState extends State<ChatPage> {
     }
     // Initialize scenario provider for generating negotiation scenarios
     _scenarioProvider = GeminiProvider(
-      model: GenerativeModel(
-        model: 'gemini-2.0-flash',
-        apiKey: geminiApiKey,
-        systemInstruction: Content.system(scenarioPrompt),
-      ),
+      model: AiConfig.createScenarioModel(scenarioPrompt),
     );
   }
 
   @override
   void dispose() {
-    // No contextController to dispose
+    _chatService.dispose();
+    _sttService.dispose();
     super.dispose();
   }
 
@@ -219,6 +218,7 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: ChatView(
               provider: _chatService.provider,
+              sttService: _sttService.translateAudio, // Use STT service instead of provider
               responseBuilder: _buildResponseWidget,
               messageSender: _wrappedMessageSender,
               analysisMessageBuilder: (context, message) { // Provide the analysisMessageBuilder

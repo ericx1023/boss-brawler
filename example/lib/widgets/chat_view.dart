@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:cross_file/cross_file.dart';
 
 class ChatView extends StatelessWidget {
   final GeminiProvider provider;
+  final GeminiProvider? sttProvider; // Optional STT provider without system instructions
+  final Stream<String> Function(XFile)? sttService; // Optional STT service
   final Widget Function(BuildContext, String) responseBuilder;
   final Stream<String> Function(String, {Iterable<Attachment> attachments})
   messageSender;
@@ -19,6 +22,8 @@ class ChatView extends StatelessWidget {
   const ChatView({
     Key? key,
     required this.provider,
+    this.sttProvider,
+    this.sttService,
     required this.responseBuilder,
     required this.messageSender,
     this.afterUserMessageBuilder,
@@ -29,6 +34,8 @@ class ChatView extends StatelessWidget {
   Widget build(BuildContext context) {
     return LlmChatView(
       provider: provider,
+      sttProvider: sttProvider, // Pass the STT provider
+      sttService: sttService, // Pass the STT service
       style: LlmChatViewStyle(
         // Attempt to set the overall background of the chat view area
         backgroundColor: Colors.black, // or Colors.transparent if black causes issues with other elements

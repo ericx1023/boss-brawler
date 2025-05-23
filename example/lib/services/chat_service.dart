@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import '../gemini_api_key.dart';
+import 'ai_config.dart';
 import 'prompt_builder.dart';
 import 'chat_history_service.dart';
 
@@ -10,6 +9,7 @@ class ChatService {
   final PromptBuilder promptBuilder;
   final ChatHistoryService _historyService;
   late GeminiProvider provider;
+  late GeminiProvider sttProvider; // Separate provider for speech-to-text
   VoidCallback? _historyListener;
 
   ChatService({
@@ -18,15 +18,19 @@ class ChatService {
   }) : _historyService = historyService {
     final initialPrompt = promptBuilder.buildPrompt();
     _initProvider(initialPrompt);
+    _initSttProvider();
   }
 
   GeminiProvider _createProvider(String systemPrompt) {
     return GeminiProvider(
-      model: GenerativeModel(
-        model: 'gemini-2.0-flash',
-        apiKey: geminiApiKey,
-        systemInstruction: Content.system(systemPrompt),
-      ),
+      model: AiConfig.createChatModel(systemPrompt),
+    );
+  }
+
+  GeminiProvider _createSttProvider() {
+    // Create a provider without system instructions for speech-to-text
+    return GeminiProvider(
+      model: AiConfig.createSttModel(),
     );
   }
 
@@ -41,6 +45,10 @@ class ChatService {
         provider.history = history;
       }
     });
+  }
+
+  void _initSttProvider() {
+    sttProvider = _createSttProvider();
   }
 
   /// Updates the system prompt and retains existing history.
@@ -62,5 +70,12 @@ class ChatService {
     }
     // Reapply the existing history directly
     provider.history = history;
+  }
+
+  /// Dispose resources
+  void dispose() {
+    if (_historyListener != null) {
+      provider.removeListener(_historyListener!);
+    }
   }
 } 

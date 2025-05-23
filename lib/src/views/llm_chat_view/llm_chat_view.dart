@@ -49,6 +49,8 @@ class LlmChatView extends StatefulWidget {
   /// options.
   ///
   /// - [provider]: The [LlmProvider] that manages the chat interactions.
+  /// - [sttProvider]: Optional separate provider for speech-to-text
+  /// - [sttService]: Optional STT service function
   /// - [style]: Optional. The [LlmChatViewStyle] to customize the appearance of
   ///   the chat interface.
   /// - [responseBuilder]: Optional. A custom [ResponseBuilder] to handle the
@@ -80,6 +82,8 @@ class LlmChatView extends StatefulWidget {
   /// - [analysisMessageBuilder]: Optional. A builder to render a custom widget for analysis messages.
   LlmChatView({
     required LlmProvider provider,
+    LlmProvider? sttProvider,
+    Stream<String> Function(XFile)? sttService,
     LlmChatViewStyle? style,
     ResponseBuilder? responseBuilder,
     LlmStreamGenerator? messageSender,
@@ -103,7 +107,9 @@ class LlmChatView extends StatefulWidget {
          welcomeMessage: welcomeMessage,
          enableAttachments: enableAttachments,
          enableVoiceNotes: enableVoiceNotes,
-       );
+       ),
+       sttProvider = sttProvider,
+       sttService = sttService;
 
   /// Whether to enable file and image attachments in the chat input.
   ///
@@ -123,6 +129,12 @@ class LlmChatView extends StatefulWidget {
   /// response builder, welcome message, and LLM icon for the chat interface.
   /// It encapsulates the core data and functionality needed for the chat view.
   late final ChatViewModel viewModel;
+
+  /// Optional separate provider for speech-to-text without system instructions
+  final LlmProvider? sttProvider;
+
+  /// Optional STT service function
+  final Stream<String> Function(XFile)? sttService;
 
   /// The action to perform when the user cancels a chat operation.
   ///
@@ -290,20 +302,36 @@ class _LlmChatViewState extends State<LlmChatView>
     _initialMessage = null;
     _associatedResponse = null;
 
-    // use the LLM to translate the attached audio to text
-    const prompt =
-        'translate the attached audio to text; provide the result of that '
-        'translation as just the text of the translation itself. be careful to '
-        'separate the background audio from the foreground audio and only '
-        'provide the result of translating the foreground audio.';
-    final attachments = [await FileAttachment.fromFile(file)];
-
     var response = '';
+    
+    // Priority: sttService > sttProvider > main provider
+    late Stream<String> translationStream;
+    
+    if (widget.sttService != null) {
+      // Use dedicated STT service (preferred)
+      translationStream = widget.sttService!(file);
+    } else if (widget.sttProvider != null) {
+      // Use dedicated STT provider (fallback)
+      const prompt =
+          'translate the attached audio to text; provide the result of that '
+          'translation as just the text of the translation itself. be careful to '
+          'separate the background audio from the foreground audio and only '
+          'provide the result of translating the foreground audio.';
+      final attachments = [await FileAttachment.fromFile(file)];
+      translationStream = widget.sttProvider!.generateStream(prompt, attachments: attachments);
+    } else {
+      // Use main provider (last resort - includes system instructions)
+      const prompt =
+          'translate the attached audio to text; provide the result of that '
+          'translation as just the text of the translation itself. be careful to '
+          'separate the background audio from the foreground audio and only '
+          'provide the result of translating the foreground audio.';
+      final attachments = [await FileAttachment.fromFile(file)];
+      translationStream = widget.viewModel.provider.generateStream(prompt, attachments: attachments);
+    }
+    
     _pendingSttResponse = LlmResponse(
-      stream: widget.viewModel.provider.generateStream(
-        prompt,
-        attachments: attachments,
-      ),
+      stream: translationStream,
       onUpdate: (text) => response += text,
       onDone: (error) async => _onSttDone(error, response, file),
     );
@@ -318,6 +346,7 @@ class _LlmChatViewState extends State<LlmChatView>
   ) async {
     assert(_pendingSttResponse != null);
     setState(() {
+      // Set the transcribed text as initial message so user can see and edit it
       _initialMessage = ChatMessage.user(response, []);
       _pendingSttResponse = null;
     });

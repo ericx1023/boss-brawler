@@ -207,7 +207,6 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.black, // Removed, should be inherited from ThemeData
       appBar: AppBar(
         title: const Text(App.title, style: TextStyle(color: Colors.white)), // AppBar title white
         backgroundColor: Color(0xFF2C2C2E), // Dark grey AppBar background

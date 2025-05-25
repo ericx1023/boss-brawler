@@ -4,13 +4,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 
 // Import the screens
 import 'screens/home_screen.dart';
 import 'screens/chat_page.dart';
 import 'screens/chat_list_screen.dart';
-
+import 'screens/auth_screen.dart';
 
 // Make main async and initialize Firebase
 void main() async {
@@ -22,7 +23,7 @@ void main() async {
 }
 
 class App extends StatelessWidget {
-  static const title = 'Nego Dojo';
+  static const title = 'Boss Brawler';
 
   const App({super.key});
 
@@ -52,9 +53,10 @@ class App extends StatelessWidget {
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
-        // Define the routes
-        initialRoute: '/home',
+        // Use AuthWrapper to handle authentication state
+        home: const AuthWrapper(),
         routes: {
+          '/auth': (context) => const AuthScreen(),
           '/home': (context) => const HomeScreen(),
           '/chat': (context) {
             // Load specific chat session if UUID argument is provided
@@ -65,4 +67,37 @@ class App extends StatelessWidget {
           '/chats': (context) => const ChatListScreen(),
         },
       );
+}
+
+/// Wrapper widget that handles authentication state
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // Show loading spinner while checking auth state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          );
+        }
+
+        // User is signed in
+        if (snapshot.hasData) {
+          return const HomeScreen();
+        }
+
+        // User is not signed in
+        return const AuthScreen();
+      },
+    );
+  }
 }

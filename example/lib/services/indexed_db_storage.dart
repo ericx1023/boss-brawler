@@ -381,4 +381,75 @@ class IndexedDBStorage implements ChatHistoryStorage {
     debugPrint('Legacy clearHistory called');
     await deleteAllSessions();
   }
+
+  @override
+  Future<void> clearActiveSession() async {
+    try {
+      final db = await _openDatabase();
+      final transaction = db.transaction(_storeName, idbModeReadWrite);
+      final store = transaction.objectStore(_storeName);
+      
+      // Delete the active session key
+      await store.delete(_activeSessionKey);
+      await transaction.completed;
+      
+      _activeSessionUuid = null;
+      
+      debugPrint('Cleared active session');
+    } catch (e) {
+      debugPrint('Error clearing active session: $e');
+      rethrow;
+    }
+  }
+
+  /// Clean up duplicate and empty sessions
+  Future<void> cleanupDuplicateSessions() async {
+    try {
+      final sessions = await getAllSessions();
+      final sessionsToDelete = <String>[];
+      
+      // Find empty sessions (no messages or only empty messages)
+      final emptySessions = sessions.where((session) => 
+        session.messages.isEmpty || 
+        (session.messages.length == 1 && (session.messages.first.text?.trim().isEmpty ?? true))
+      ).toList();
+      
+      // Keep only the most recent empty session, mark others for deletion
+      if (emptySessions.length > 1) {
+        emptySessions.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        for (int i = 1; i < emptySessions.length; i++) {
+          sessionsToDelete.add(emptySessions[i].uuid);
+        }
+      }
+      
+      // Find sessions with identical content (potential duplicates)
+      final contentMap = <String, List<ChatSession>>{};
+      for (final session in sessions) {
+        if (session.messages.isNotEmpty) {
+          final content = session.messages.map((m) => m.text ?? '').join('|');
+          contentMap.putIfAbsent(content, () => []).add(session);
+        }
+      }
+      
+      // Mark duplicate sessions for deletion (keep the most recent)
+      for (final duplicates in contentMap.values) {
+        if (duplicates.length > 1) {
+          duplicates.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          for (int i = 1; i < duplicates.length; i++) {
+            sessionsToDelete.add(duplicates[i].uuid);
+          }
+        }
+      }
+      
+      // Delete marked sessions
+      for (final uuid in sessionsToDelete) {
+        await deleteSession(uuid);
+      }
+      
+      debugPrint('Cleaned up ${sessionsToDelete.length} duplicate/empty sessions');
+    } catch (e) {
+      debugPrint('Error cleaning up duplicate sessions: $e');
+      rethrow;
+    }
+  }
 } 

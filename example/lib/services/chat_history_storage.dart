@@ -73,4 +73,7 @@ abstract class ChatHistoryStorage {
   
   /// Legacy method: Clear all stored history
   Future<void> clearHistory();
+  
+  /// Clear the active session to force creation of a new session on next save
+  Future<void> clearActiveSession();
 } 

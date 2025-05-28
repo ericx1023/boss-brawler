@@ -87,9 +87,14 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     _promptBuilder = PromptBuilder(defaultPrompt: negotiationCoachSystemPrompt);
+    
+    // Don't load previous history if no specific session is requested (new chat)
+    final shouldLoadHistory = widget.sessionUuid != null;
+    
     _chatService = ChatService(
       promptBuilder: _promptBuilder,
       historyService: ChatHistoryService(),
+      loadPreviousHistory: shouldLoadHistory,
     );
     _sttService = SttService();
     _analysisService = AnalysisService();
@@ -191,6 +196,13 @@ class _ChatPageState extends State<ChatPage> {
 
     // Check if this is the very first message
     if (hist.isEmpty) {
+      // For new chats (no sessionUuid), clear active session to ensure new session creation
+      if (widget.sessionUuid == null) {
+        await _chatService.clearActiveSession();
+        // Temporarily remove the history listener to prevent automatic saving during scenario selection
+        _chatService.disableHistorySaving();
+      }
+      
       setState(() { _pendingPrompt = prompt; });
       _chatService.provider.history = [...hist, userMsg];
       _chatService.provider.notifyListeners();
@@ -256,6 +268,10 @@ class _ChatPageState extends State<ChatPage> {
 
   // helper to send prompt (with scenario) to negotiation LLM
   void _sendCombinedPrompt(String prompt, {Iterable<Attachment> attachments = const []}) {
+    // Re-enable history saving now that scenario selection is complete
+    if (widget.sessionUuid == null) {
+      _chatService.enableHistorySaving();
+    }
     _messageSenderService.sendMessage(prompt, attachments: attachments).listen((_) {});
   }
 } 

@@ -25,4 +25,9 @@ class ChatHistoryService {
   Future<void> clearHistory() {
     return _storage.clearHistory();
   }
+
+  /// Clear the active session to force creation of a new session on next save.
+  Future<void> clearActiveSession() {
+    return _storage.clearActiveSession();
+  }
 } 

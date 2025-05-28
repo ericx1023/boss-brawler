@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/chat_history_service.dart';
 import '../services/auth_service.dart';
@@ -24,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _sessionsFuture = _historyService.getAllSessions();
     _loadUserProfile();
+    _cleanupEmptySessions();
   }
 
   Future<void> _loadUserProfile() async {
@@ -32,6 +34,112 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _userProfile = profile;
       });
+    }
+  }
+
+  Future<void> _cleanupEmptySessions() async {
+    try {
+      // Use the new comprehensive cleanup method
+      await ChatStorageFactory.cleanupDuplicateSessions();
+      
+      // Refresh the sessions list
+      setState(() {
+        _sessionsFuture = _historyService.getAllSessions();
+      });
+    } catch (e) {
+      debugPrint('Error cleaning up sessions: $e');
+    }
+  }
+
+  Future<void> _refreshSessions() async {
+    setState(() {
+      _sessionsFuture = _historyService.getAllSessions();
+    });
+  }
+
+  Future<void> _deleteSession(String uuid, String title) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Chat'),
+        content: Text('Are you sure you want to delete "$title"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await ChatStorageFactory.deleteSession(uuid);
+        setState(() {
+          _sessionsFuture = _historyService.getAllSessions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Chat deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting chat: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _clearAllChats() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Chats'),
+        content: const Text('Are you sure you want to delete all chat history? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Clear All'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _historyService.clearHistory();
+        setState(() {
+          _sessionsFuture = _historyService.getAllSessions();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All chats cleared successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error clearing chats: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -174,6 +282,16 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             
+            // Clear all chats
+            ListTile(
+              leading: const Icon(Icons.delete_sweep, color: Colors.red),
+              title: const Text('Clear All Chats'),
+              onTap: () {
+                Navigator.pop(context);
+                _clearAllChats();
+              },
+            ),
+            
             // Sign out
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
@@ -282,10 +400,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(16.0),
             child: InkWell( // Wrap with InkWell for tap functionality
               onTap: () async {
-                // Create a new empty chat session
-                await ChatStorageFactory.createSession(<ChatMessage>[]);
-                // Navigate to Chat page
-                Navigator.pushNamed(context, '/chat');
+                // Navigate to Chat page without creating a session
+                // Let ChatService handle session creation when user starts chatting
+                await Navigator.pushNamed(context, '/chat');
+                // Refresh sessions when returning from chat
+                _refreshSessions();
               },
               child: Text(
                 'New Chat', // As per image
@@ -354,14 +473,43 @@ class _HomeScreenState extends State<HomeScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        trailing: Text(_formatRelativeTime(date), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        onTap: () {
-                          Navigator.pushNamed(
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_formatRelativeTime(date), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                            const SizedBox(width: 8),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert, size: 20),
+                              onSelected: (value) {
+                                if (value == 'delete') {
+                                  _deleteSession(session.uuid, title);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete, color: Colors.red, size: 20),
+                                      SizedBox(width: 8),
+                                      Text('Delete', style: TextStyle(color: Colors.red)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        onTap: () async {
+                          await Navigator.pushNamed(
                             context,
                             '/chat',
                             arguments: session.uuid,
                           );
+                          // Refresh sessions when returning from chat
+                          _refreshSessions();
                         },
+                        onLongPress: () => _deleteSession(session.uuid, title),
                       ),
                     );
                   },
@@ -382,8 +530,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               onPressed: () async {
-                await ChatStorageFactory.createSession(<ChatMessage>[]);
-                Navigator.pushNamed(context, '/chat');
+                // Navigate to Chat page without creating a session
+                // Let ChatService handle session creation when user starts chatting
+                await Navigator.pushNamed(context, '/chat');
+                // Refresh sessions when returning from chat
+                _refreshSessions();
               },
             ),
           ),

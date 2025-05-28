@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 
 // Import the screens
@@ -12,6 +13,8 @@ import 'screens/home_screen.dart';
 import 'screens/chat_page.dart';
 import 'screens/chat_list_screen.dart';
 import 'screens/auth_screen.dart';
+import 'services/auth_service.dart';
+import 'services/chat_storage_factory.dart';
 
 // Make main async and initialize Firebase
 void main() async {
@@ -19,6 +22,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Debug: Clean up duplicate sessions on app start (remove this in production)
+  if (kDebugMode) {
+    try {
+      await ChatStorageFactory.cleanupDuplicateSessions();
+      debugPrint('Cleaned up duplicate sessions on app start');
+    } catch (e) {
+      debugPrint('Error cleaning up sessions on start: $e');
+    }
+  }
+
   runApp(const App());
 }
 

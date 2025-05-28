@@ -47,4 +47,12 @@ class ChatStorageFactory {
   static Future<void> deleteSession(String uuid) {
     return getStorage().deleteSession(uuid);
   }
+
+  /// Clean up duplicate and empty sessions (IndexedDB only)
+  static Future<void> cleanupDuplicateSessions() async {
+    final storage = getStorage();
+    if (storage is IndexedDBStorage) {
+      await storage.cleanupDuplicateSessions();
+    }
+  }
 } 

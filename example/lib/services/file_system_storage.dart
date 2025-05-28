@@ -367,4 +367,19 @@ class FileSystemStorage implements ChatHistoryStorage {
   Future<void> clearHistory() async {
     await deleteAllSessions();
   }
+
+  @override
+  Future<void> clearActiveSession() async {
+    try {
+      final activeFile = await _getActiveSessionFile();
+      if (await activeFile.exists()) {
+        await activeFile.delete();
+      }
+      _activeSessionUuid = null;
+      debugPrint('Cleared active session');
+    } catch (e) {
+      debugPrint('Error clearing active session: $e');
+      rethrow;
+    }
+  }
 } 

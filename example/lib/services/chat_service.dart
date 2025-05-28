@@ -15,9 +15,10 @@ class ChatService {
   ChatService({
     required this.promptBuilder,
     required ChatHistoryService historyService,
+    bool loadPreviousHistory = true,
   }) : _historyService = historyService {
     final initialPrompt = promptBuilder.buildPrompt();
-    _initProvider(initialPrompt);
+    _initProvider(initialPrompt, loadPreviousHistory);
     _initSttProvider();
   }
 
@@ -34,17 +35,20 @@ class ChatService {
     );
   }
 
-  void _initProvider(String systemPrompt) {
+  void _initProvider(String systemPrompt, bool loadPreviousHistory) {
     provider = _createProvider(systemPrompt);
     _historyListener = () =>
         _historyService.saveHistory(provider.history.toList());
     provider.addListener(_historyListener!);
 
-    _historyService.loadHistory().then((history) {
-      if (history.isNotEmpty) {
-        provider.history = history;
-      }
-    });
+    if (loadPreviousHistory) {
+      _historyService.loadHistory().then((history) {
+        if (history.isNotEmpty) {
+          provider.history = history;
+        }
+      });
+    }
+    // Note: Active session clearing is now handled when user sends first message
   }
 
   void _initSttProvider() {
@@ -76,6 +80,38 @@ class ChatService {
   void dispose() {
     if (_historyListener != null) {
       provider.removeListener(_historyListener!);
+    }
+  }
+
+  /// Clear the active session to force creation of a new session
+  Future<void> clearActiveSession() async {
+    try {
+      await _historyService.clearActiveSession();
+    } catch (e) {
+      debugPrint('Error clearing active session: $e');
+    }
+  }
+
+  /// Temporarily disable history saving (useful during scenario selection)
+  void disableHistorySaving() {
+    if (_historyListener != null) {
+      provider.removeListener(_historyListener!);
+    }
+  }
+
+  /// Re-enable history saving
+  void enableHistorySaving() {
+    if (_historyListener != null) {
+      provider.addListener(_historyListener!);
+    }
+  }
+
+  /// Clear the active session to force creation of a new session
+  Future<void> _clearActiveSession() async {
+    try {
+      await _historyService.clearActiveSession();
+    } catch (e) {
+      debugPrint('Error clearing active session: $e');
     }
   }
 } 

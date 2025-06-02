@@ -15,6 +15,7 @@ import 'screens/chat_list_screen.dart';
 import 'screens/auth_screen.dart';
 import 'services/auth_service.dart';
 import 'services/chat_storage_factory.dart';
+import 'services/ios_config_checker.dart';
 
 // Make main async and initialize Firebase
 void main() async {
@@ -30,6 +31,13 @@ void main() async {
       debugPrint('Cleaned up duplicate sessions on app start');
     } catch (e) {
       debugPrint('Error cleaning up sessions on start: $e');
+    }
+    
+    // Check iOS configuration for Google Sign-In
+    try {
+      await IOSConfigChecker.printConfigurationReport();
+    } catch (e) {
+      debugPrint('Error checking iOS configuration: $e');
     }
   }
 

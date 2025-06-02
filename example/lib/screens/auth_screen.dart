@@ -30,14 +30,27 @@ class _AuthScreenState extends State<AuthScreen> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     
-    final result = await _authService.signInWithGoogle();
-    
-    setState(() => _isLoading = false);
-    
-    if (result != null && mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
-    } else {
-      _showError('Google sign in failed. Please check debug console for details.');
+    try {
+      final result = await _authService.signInWithGoogle();
+      
+      setState(() => _isLoading = false);
+      
+      if (result != null && mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        // More specific error message for iOS simulator
+        String errorMessage = 'Google sign in failed.';
+        if (Theme.of(context).platform == TargetPlatform.iOS) {
+          errorMessage += ' If you\'re using iOS Simulator, try testing on a physical device. Check debug console for details.';
+        } else {
+          errorMessage += ' Please check debug console for details.';
+        }
+        _showError(errorMessage);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      debugPrint('Google Sign-In UI error: $e');
+      _showError('Google sign in encountered an error. Please try again or use Quick Trial.');
     }
   }
 

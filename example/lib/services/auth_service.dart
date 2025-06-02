@@ -9,10 +9,7 @@ class AuthService {
   AuthService._internal();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    // For Flutter Web, use clientId instead of serverClientId
-    clientId: '750386372057-4caqt2k16av0sbdrubn9bjs4rm4d6ltp.apps.googleusercontent.com',
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Current user stream

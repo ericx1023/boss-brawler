@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "org.psychevalley.app"
+    namespace = "com.brawler.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

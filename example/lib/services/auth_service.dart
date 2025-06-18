@@ -2,14 +2,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io' show Platform;
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
-  AuthService._internal();
+  AuthService._internal() {
+    // Initialize GoogleSignIn with explicit clientId from Firebase config
+    _googleSignIn = GoogleSignIn(
+      signInOption: SignInOption.standard,
+      // Use the CLIENT_ID from your GoogleService-Info.plist
+      clientId: '750386372057-03li2kvdjlgmeop0kigb8gd329sfsbf5.apps.googleusercontent.com',
+    );
+    
+    // Verify Google Sign-In is properly configured
+    debugPrint('🔧 AuthService initialized');
+    debugPrint('🔧 GoogleSignIn clientId: ${_googleSignIn.clientId}');
+  }
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  late final GoogleSignIn _googleSignIn;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Current user stream
@@ -39,17 +51,67 @@ class AuthService {
   /// Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      debugPrint('Starting Google Sign In...');
+      debugPrint('🚀 Starting Google Sign In...');
+      debugPrint('🔧 GoogleSignIn configuration: ${_googleSignIn.clientId}');
       
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      // First try to sign in silently to check if user is already authenticated
+      debugPrint('📱 Attempting silent sign in first...');
+      try {
+        final silentUser = await _googleSignIn.signInSilently();
+        if (silentUser != null) {
+          debugPrint('✅ Silent sign in successful: ${silentUser.email}');
+          // Continue with Firebase authentication
+          final GoogleSignInAuthentication googleAuth = await silentUser.authentication;
+          final credential = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+          final result = await _auth.signInWithCredential(credential);
+          await _createUserProfile(result.user!);
+          return result;
+        }
+      } catch (e) {
+        debugPrint('📱 Silent sign in failed: $e');
+      }
+      
+      debugPrint('📱 Calling _googleSignIn.signIn()...');
+      debugPrint('📱 Platform: ${Platform.isIOS ? "iOS" : "Android"}');
+      debugPrint('📱 Is running on device: ${!kIsWeb && (Platform.isIOS || Platform.isAndroid)}');
+      
+      // Check if already signed in
+      final currentGoogleUser = _googleSignIn.currentUser;
+      debugPrint('📱 Current Google user: ${currentGoogleUser?.email ?? "none"}');
+      
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('❌ Google Sign In timed out after 10 seconds');
+          debugPrint('❌ This might be a simulator issue - try testing on a physical device');
+          return null;
+        },
+      );
+      debugPrint('📱 _googleSignIn.signIn() completed');
+      debugPrint('📱 Returned googleUser: ${googleUser?.email ?? "null"}');
+      
       if (googleUser == null) {
-        debugPrint('Google Sign In cancelled by user');
-        return null; // User cancelled
+        debugPrint('❌ Google Sign In returned null - checking if user cancelled or error occurred');
+        
+        // Try to get more details about why it failed
+        try {
+          await _googleSignIn.signInSilently();
+          debugPrint('📱 Silent sign in attempt completed');
+        } catch (e) {
+          debugPrint('📱 Silent sign in failed: $e');
+        }
+        
+        return null; // User cancelled or error occurred
       }
 
-      debugPrint('Google user obtained: ${googleUser.email}');
+      debugPrint('✅ Google user obtained: ${googleUser.email}');
       
+      debugPrint('🔑 Getting authentication tokens...');
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      debugPrint('🔑 Authentication tokens obtained');
       
       // For Flutter Web, tokens might be null even when authentication succeeds
       // Try to get tokens with retry mechanism
@@ -89,7 +151,20 @@ class AuthService {
       final result = await _auth.signInWithCredential(credential);
       
       debugPrint('Firebase sign in successful: ${result.user?.email}');
-      await _createUserProfile(result.user!);
+      
+      // Create user profile with timeout to prevent infinite loading
+      try {
+        await _createUserProfile(result.user!).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            debugPrint('⚠️ User profile creation timed out, but login succeeded');
+          },
+        );
+      } catch (e) {
+        debugPrint('⚠️ User profile creation failed: $e');
+        debugPrint('✅ Login still successful, continuing...');
+      }
+      
       return result;
     } catch (e) {
       debugPrint('Google sign in failed with error: $e');
@@ -185,10 +260,23 @@ class AuthService {
   /// Create user profile in Firestore
   Future<void> _createUserProfile(User user, {String? name}) async {
     try {
+      debugPrint('🔥 Starting user profile creation for ${user.email}');
+      
       final userDoc = _firestore.collection('users').doc(user.uid);
-      final exists = await userDoc.get();
+      debugPrint('🔥 Checking if user document exists...');
+      
+      final exists = await userDoc.get().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          debugPrint('🔥 Firestore get() timed out');
+          throw Exception('Firestore operation timed out');
+        },
+      );
+      
+      debugPrint('🔥 User document exists: ${exists.exists}');
       
       if (!exists.exists) {
+        debugPrint('🔥 Creating new user document...');
         await userDoc.set({
           'profile': {
             'name': name ?? user.displayName ?? 'User',
@@ -206,10 +294,20 @@ class AuthService {
             'totalSessions': 0,
             'lastActive': FieldValue.serverTimestamp(),
           },
-        });
+        }).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            debugPrint('🔥 Firestore set() timed out');
+            throw Exception('Firestore set operation timed out');
+          },
+        );
+        debugPrint('🔥 User profile created successfully');
+      } else {
+        debugPrint('🔥 User profile already exists, skipping creation');
       }
     } catch (e) {
       debugPrint('Failed to create user profile: $e');
+      rethrow;
     }
   }
 

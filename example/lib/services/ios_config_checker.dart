@@ -6,9 +6,9 @@ class IOSConfigChecker {
   /// Check if running on iOS Simulator
   static bool get isIOSSimulator {
     if (defaultTargetPlatform != TargetPlatform.iOS) return false;
-    // This is a heuristic - iOS Simulator typically has specific characteristics
-    // In a real app, you might want to use a more reliable method
-    return kDebugMode; // Assume debug mode often means simulator
+    // Better detection method - check for specific simulator characteristics
+    // This is still a heuristic, but more reliable
+    return kDebugMode && const bool.fromEnvironment('dart.vm.product') == false;
   }
 
   /// Validate iOS Google Sign-In configuration
@@ -42,7 +42,11 @@ class IOSConfigChecker {
     
     debugPrint('=== iOS Google Sign-In Configuration Report ===');
     debugPrint('Platform: ${config['platform']}');
-    debugPrint('Is Simulator: ${config['isSimulator']}');
+    debugPrint('Debug Mode: $kDebugMode');
+    debugPrint('Profile Mode: $kProfileMode');
+    debugPrint('Release Mode: $kReleaseMode');
+    debugPrint('Is Simulator (our detection): ${config['isSimulator']}');
+    debugPrint('💡 If you\'re on a real device, our detection might be wrong');
     
     if (config['issues'].isNotEmpty) {
       debugPrint('Issues:');

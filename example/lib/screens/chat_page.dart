@@ -191,6 +191,9 @@ class _ChatPageState extends State<ChatPage> {
 
   // initial send: record prompt, show scenario options, do not send to LLM yet
   Stream<String> _wrappedMessageSender(String prompt, {Iterable<Attachment> attachments = const []}) async* {
+    // Dismiss keyboard after user sends message
+    FocusScope.of(context).unfocus();
+    
     final userMsg = ChatMessage.user(prompt, attachments);
     final hist = _chatService.provider.history;
 
@@ -244,17 +247,49 @@ class _ChatPageState extends State<ChatPage> {
                     scenarios: _fetchedScenarios!,
                     selectedScenario: _selectedScenario,
                     onScenarioChanged: (scenario) {
-                      final combined = scenario?.toLowerCase() == 'skip'
-                          ? (_pendingPrompt ?? '')
-                          : '[$scenario] ${_pendingPrompt ?? ''}';
+                      setState(() {
+                        _selectedScenario = scenario;
+                      });
+                      
+                      // Only send immediately if it's not the custom scenario
+                      if (scenario != null && scenario != 'Custom') {
+                        final originalPrompt = _pendingPrompt ?? '';
+                        if (scenario.toLowerCase() == 'skip') {
+                          // Skip scenario selection, use original prompt
+                          setState(() {
+                            _fetchedScenarios = null;
+                            _selectedScenario = null;
+                            _pendingPrompt = null;
+                          });
+                          _sendCombinedPrompt(originalPrompt);
+                        } else {
+                          // Update the system prompt with the selected scenario
+                          _chatService.updatePrompt(scenario: scenario);
+                          
+                          setState(() {
+                            _fetchedScenarios = null;
+                            _selectedScenario = null;
+                            _pendingPrompt = null;
+                          });
+                          // Send just the original user prompt, not the scenario
+                          _sendCombinedPrompt(originalPrompt);
+                        }
+                      }
+                    },
+                    onContextChanged: (customScenario) {
+                      // This is called when user clicks "Use This Scenario" button
+                      // Update the system prompt with the custom scenario
+                      _chatService.updatePrompt(scenario: customScenario);
+                      
+                      final originalPrompt = _pendingPrompt ?? '';
                       setState(() {
                         _fetchedScenarios = null;
                         _selectedScenario = null;
                         _pendingPrompt = null;
                       });
-                      _sendCombinedPrompt(combined);
+                      // Send just the original user prompt, not the scenario
+                      _sendCombinedPrompt(originalPrompt);
                     },
-                    onContextChanged: (_) {},
                   );
                 }
                 return const SizedBox.shrink();
